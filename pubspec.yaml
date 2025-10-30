@@ -1,0 +1,53 @@
+name: efreeze
+description: "A new Flutter project."
+
+publish_to: 'none'
+
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  flutter_screenutil: ^5.9.3
+  cupertino_icons: ^1.0.8
+  get_it: ^8.2.0
+
+  bloc: ^9.0.1
+  flutter_bloc: ^9.1.1
+
+
+  # Network
+  dio: ^5.9.0
+  pretty_dio_logger: ^1.4.0
+
+  # Local Storage
+  shared_preferences: ^2.5.3
+
+  flutter_svg: ^2.2.1
+  bounce: ^1.0.2
+  cached_network_image: ^3.4.1
+  image_picker: ^1.1.2
+  image_cropper: ^8.0.1
+  permission_handler: ^11.3.1
+  flutter_launcher_icons: ^0.14.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+
+flutter:
+  uses-material-design: true
+
+
+  assets:
+    - assets/pngs/
