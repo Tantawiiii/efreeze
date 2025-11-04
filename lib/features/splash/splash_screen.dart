@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constant/app_assets.dart';
 import '../../core/constant/app_colors.dart';
 import '../../core/routing/app_routes.dart';
+import '../../core/services/storage_service.dart';
+import '../../core/di/inject.dart' as di;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,10 +33,21 @@ class _SplashScreenState extends State<SplashScreen>
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    // Navigate after short delay
+    _checkAuthAndNavigate();
+  }
+
+  void _checkAuthAndNavigate() {
     Timer(const Duration(milliseconds: 1700), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
+
+      final storageService = di.sl<StorageService>();
+      final token = storageService.getToken();
+
+      if (token != null && token.isNotEmpty) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      } else {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
+      }
     });
   }
 

@@ -37,6 +37,9 @@ dependencies:
   image_cropper: ^8.0.1
   permission_handler: ^11.3.1
   flutter_launcher_icons: ^0.14.4
+  curved_navigation_bar: ^1.0.3
+  shimmer: ^3.0.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
