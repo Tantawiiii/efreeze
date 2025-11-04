@@ -12,7 +12,7 @@ class PrimaryButton extends StatelessWidget {
   });
 
   final String title;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,9 @@ class PrimaryButton extends StatelessWidget {
         width: double.infinity,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.primaryColor,
+          color: onPressed == null
+              ? AppColors.primaryColor.withOpacity(0.6)
+              : AppColors.primaryColor,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Text(
