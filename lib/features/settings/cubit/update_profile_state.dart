@@ -20,3 +20,4 @@ class UpdateProfileFailure extends UpdateProfileState {
   const UpdateProfileFailure(this.message);
 }
 
+
