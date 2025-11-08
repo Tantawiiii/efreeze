@@ -1,42 +1,33 @@
-import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import '../../auth/services/auth_service.dart';
-import '../models/update_profile_response_model.dart';
+import '../../auth/models/user_model.dart';
+import '../models/check_auth_response_model.dart';
+import '../services/settings_service.dart';
 
-part 'update_profile_state.dart';
+part 'user_info_state.dart';
 
-class UpdateProfileCubit extends Cubit<UpdateProfileState> {
-  final AuthService _authService;
+class UserInfoCubit extends Cubit<UserInfoState> {
+  final SettingsService _settingsService;
 
-  UpdateProfileCubit(this._authService) : super(UpdateProfileInitial());
+  UserInfoCubit(this._settingsService) : super(UserInfoInitial());
 
-  /// Update user profile
-  Future<void> updateProfile({
-    required String name,
-    required String email,
-    required String phone,
-    String? password,
-    File? avatar,
-  }) async {
-    emit(UpdateProfileLoading());
+  /// Fetch user info and orders
+  Future<void> checkAuth() async {
+    emit(UserInfoLoading());
 
     try {
-      final response = await _authService.updateProfile(
-        name: name,
-        email: email,
-        phone: phone,
-        password: password,
-        avatar: avatar,
-      );
+      final response = await _settingsService.checkAuth();
 
-      final updateProfileResponse = UpdateProfileResponseModel.fromJson(
+      final checkAuthResponse = CheckAuthResponseModel.fromJson(
         response.data as Map<String, dynamic>,
       );
 
-      emit(UpdateProfileSuccess(updateProfileResponse));
+      emit(UserInfoSuccess(
+        user: checkAuthResponse.data,
+        orders: checkAuthResponse.data.orders,
+      ));
     } catch (e) {
-      String errorMessage = 'Failed to update profile. Please try again.';
+      String errorMessage = 'Failed to load user info. Please try again.';
 
       if (e is DioException) {
         if (e.response != null) {
@@ -58,17 +49,15 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
         }
       }
 
-      emit(UpdateProfileFailure(errorMessage));
+      emit(UserInfoFailure(errorMessage));
     }
   }
 
   /// Reset to initial state
   void reset() {
-    emit(UpdateProfileInitial());
+    emit(UserInfoInitial());
   }
 }
-
-
 
 
 

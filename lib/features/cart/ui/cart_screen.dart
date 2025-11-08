@@ -17,32 +17,48 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+    WidgetsBinding.instance.addObserver(this);
+    // Always refresh cart on first frame when screen is created
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final cubit = context.read<CartCubit>();
-        if (cubit.state is CartInitial) {
-          cubit.getCart();
-        }
+        context.read<CartCubit>().getCart();
       }
     });
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh cart when app comes to foreground
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<CartCubit>().getCart();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
+    return BlocListener<CartCubit, CartState>(
+      listener: (context, state) {
+        // Auto-refresh when coming back to this screen
+        if (state is CartInitial) {
+          context.read<CartCubit>().getCart();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
         title: const Text('Cart'),
@@ -205,6 +221,7 @@ class _CartScreenState extends State<CartScreen>
 
           return const SizedBox.shrink();
         },
+      ),
       ),
     );
   }

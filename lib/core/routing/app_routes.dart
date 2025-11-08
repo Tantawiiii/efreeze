@@ -11,4 +11,6 @@ final class AppRoutes {
   static const String allProducts = '/all-products';
   static const String addReview = '/add-review';
   static const String settings = '/settings';
+  static const String userInfo = '/user-info';
+  static const String orderDetails = '/order-details';
 }

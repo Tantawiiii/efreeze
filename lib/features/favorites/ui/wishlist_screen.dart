@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
-import '../../../core/di/inject.dart' as di;
 import '../cubit/favorites_cubit.dart';
 import '../../home/widgets/product_grid_card.dart';
 
@@ -13,18 +12,53 @@ class WishlistScreen extends StatefulWidget {
   State<WishlistScreen> createState() => _WishlistScreenState();
 }
 
-class _WishlistScreenState extends State<WishlistScreen> {
+class _WishlistScreenState extends State<WishlistScreen>
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Always refresh favorites on first frame when screen is created
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FavoritesCubit>().getFavorites();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh favorites when app comes to foreground
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<FavoritesCubit>().getFavorites();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh favorites whenever dependencies change (e.g., when screen becomes active)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FavoritesCubit>().getFavorites();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        final cubit = di.sl<FavoritesCubit>();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          cubit.getFavorites();
-        });
-        return cubit;
-      },
-      child: BlocListener<FavoritesCubit, FavoritesState>(
+    super.build(context);
+    return BlocListener<FavoritesCubit, FavoritesState>(
         listener: (context, state) {
           if (state is ToggleFavoriteSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -33,6 +67,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 backgroundColor: Colors.green,
               ),
             );
+            // Refresh favorites after toggling
+            context.read<FavoritesCubit>().getFavorites();
           } else if (state is ToggleFavoriteFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -40,6 +76,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 backgroundColor: Colors.red,
               ),
             );
+          }
+          // Auto-refresh when coming back to this screen
+          if (state is FavoritesInitial) {
+            context.read<FavoritesCubit>().getFavorites();
           }
         },
         child: Scaffold(
@@ -152,7 +192,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
             },
           ),
         ),
-      ),
     );
   }
 }

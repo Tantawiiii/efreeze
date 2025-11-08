@@ -14,6 +14,8 @@ import '../../features/cart/models/cart_item_model.dart';
 import '../../features/home/ui/all_products_screen.dart';
 import '../../features/reviews/ui/add_review_screen.dart';
 import '../../features/settings/ui/settings_screen.dart';
+import '../../features/settings/ui/user_info_screen.dart';
+import '../../features/settings/ui/order_details_screen.dart';
 
 Route<dynamic> onGenerateAppRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -63,6 +65,15 @@ Route<dynamic> onGenerateAppRoute(RouteSettings settings) {
       );
     case AppRoutes.settings:
       return MaterialPageRoute(builder: (_) => const SettingsScreen());
+    case AppRoutes.userInfo:
+      return MaterialPageRoute(builder: (_) => const UserInfoScreen());
+    case AppRoutes.orderDetails:
+      final args = settings.arguments as Map<String, dynamic>?;
+      return MaterialPageRoute(
+        builder: (_) => OrderDetailsScreen(
+          orderNumber: args?['orderNumber'] as String? ?? '',
+        ),
+      );
     default:
       return MaterialPageRoute(
         builder: (_) =>

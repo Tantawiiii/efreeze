@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/di/inject.dart' as di;
+import '../../../core/routing/app_routes.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -14,7 +15,7 @@ class HomeHeader extends StatelessWidget {
     final user = storageService.getUser();
 
     return Padding(
-      padding: EdgeInsets.only(right:  16.w),
+      padding: EdgeInsets.only(right: 16.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -26,19 +27,24 @@ class HomeHeader extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          CircleAvatar(
-            radius: 24.r,
-            backgroundColor: AppColors.textFieldBorderColor,
-            backgroundImage: user?.avatar != null
-                ? NetworkImage(user!.avatar!)
-                : null,
-            child: user?.avatar == null
-                ? Icon(
-                    Icons.person,
-                    color: AppColors.greyTextColor,
-                    size: 20.sp,
-                  )
-                : null,
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.userInfo);
+            },
+            child: CircleAvatar(
+              radius: 24.r,
+              backgroundColor: AppColors.textFieldBorderColor,
+              backgroundImage: user?.avatar != null
+                  ? NetworkImage(user!.avatar!)
+                  : null,
+              child: user?.avatar == null
+                  ? Icon(
+                      Icons.person,
+                      color: AppColors.greyTextColor,
+                      size: 20.sp,
+                    )
+                  : null,
+            ),
           ),
         ],
       ),

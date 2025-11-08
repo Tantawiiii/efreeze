@@ -8,20 +8,44 @@ import '../../../shared/widgets/primary_button.dart';
 import '../cubit/product_details_cubit.dart';
 import '../models/product_model.dart';
 import '../widgets/product_image_slider.dart';
+import '../../cart/cubit/cart_cubit.dart';
+import '../../home/services/products_service.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final int productId;
 
-  const ProductDetailsScreen({
-    super.key,
-    required this.productId,
-  });
+  const ProductDetailsScreen({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          di.sl<ProductDetailsCubit>()..getProductDetails(productId),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              di.sl<ProductDetailsCubit>()..getProductDetails(productId),
+        ),
+        BlocProvider(
+          create: (context) {
+            // Try to get existing CartCubit from context if available
+            // This works when navigating from MainNavigationScreen
+            try {
+              final existingCubit = context.read<CartCubit>();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                existingCubit.getCart();
+              });
+              return existingCubit;
+            } catch (e) {
+              // If not available (e.g., deep link or different route),
+              // create a new instance from DI
+              final newCubit = di.sl<CartCubit>();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                newCubit.getCart();
+              });
+              return newCubit;
+            }
+          },
+        ),
+      ],
       child: BlocListener<ProductDetailsCubit, ProductDetailsState>(
         listener: (context, state) {
           if (state is AddToCartSuccess) {
@@ -38,6 +62,10 @@ class ProductDetailsScreen extends StatelessWidget {
                 backgroundColor: Colors.red,
               ),
             );
+          }
+          // Refresh cart after adding to cart
+          if (state is AddToCartSuccess) {
+            context.read<CartCubit>().getCart();
           }
         },
         child: Scaffold(
@@ -70,9 +98,9 @@ class ProductDetailsScreen extends StatelessWidget {
                       SizedBox(height: 16.h),
                       ElevatedButton(
                         onPressed: () {
-                          context
-                              .read<ProductDetailsCubit>()
-                              .getProductDetails(productId);
+                          context.read<ProductDetailsCubit>().getProductDetails(
+                            productId,
+                          );
                         },
                         child: const Text('Retry'),
                       ),
@@ -81,14 +109,12 @@ class ProductDetailsScreen extends StatelessWidget {
                 );
               }
 
-              // Get product from current state or cached
               ProductModel? product;
               if (state is ProductDetailsSuccess) {
                 product = state.response.data;
-              } else if (state is AddToCartSuccess || 
-                         state is AddToCartFailure || 
-                         state is AddToCartLoading) {
-                // Use cached product details when add-to-cart states are active
+              } else if (state is AddToCartSuccess ||
+                  state is AddToCartFailure ||
+                  state is AddToCartLoading) {
                 final cubit = context.read<ProductDetailsCubit>();
                 product = cubit.cachedProductDetails?.data;
               }
@@ -110,7 +136,6 @@ class ProductDetailsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Text(
                               currentProduct.name,
                               style: TextStyle(
@@ -204,7 +229,6 @@ class ProductDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             SizedBox(height: 24.h),
-                            // Product Details Section
                             if (currentProduct.type.isNotEmpty ||
                                 currentProduct.color.isNotEmpty ||
                                 currentProduct.quantity > 0) ...[
@@ -228,25 +252,210 @@ class ProductDetailsScreen extends StatelessWidget {
                                 ),
                               SizedBox(height: 24.h),
                             ],
-                            BlocBuilder<ProductDetailsCubit,
-                                ProductDetailsState>(
-                              builder: (context, state) {
-                                final isLoading = state is AddToCartLoading;
-                                return PrimaryButton(
-                                  title: isLoading
-                                      ? 'Adding to Cart...'
-                                      : 'Add to Cart',
-                                  onPressed: isLoading
-                                      ? () {}
-                                      : () {
-                                          context
-                                              .read<ProductDetailsCubit>()
-                                              .addToCart(productId: currentProduct.id);
-                                        },
+                            BlocBuilder<CartCubit, CartState>(
+                              builder: (context, cartState) {
+                                int cartQuantity = 0;
+                                if (cartState is CartSuccess) {
+                                  try {
+                                    final cartItem = cartState.response.data
+                                        .firstWhere(
+                                          (item) =>
+                                              item.cardId == currentProduct.id,
+                                        );
+                                    cartQuantity = cartItem.quantity;
+                                  } catch (e) {
+                                    // Product not in cart
+                                    cartQuantity = 0;
+                                  }
+                                }
+
+                                if (cartQuantity > 0) {
+                                  // Show quantity controls if product is in cart
+                                  return Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16.w,
+                                      vertical: 12.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryColor.withOpacity(
+                                        0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(
+                                        color: AppColors.primaryColor,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'In Cart',
+                                          style: TextStyle(
+                                            color: AppColors.primaryColor,
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Row(
+                                          children: [
+                                            _buildQuantityButton(
+                                              context: context,
+                                              icon: Icons.remove,
+                                              onTap: () {
+                                                _updateQuantity(
+                                                  context,
+                                                  currentProduct.id,
+                                                  'minus',
+                                                );
+                                              },
+                                            ),
+                                            SizedBox(width: 16.w),
+                                            Text(
+                                              cartQuantity.toString(),
+                                              style: TextStyle(
+                                                color: AppColors.primaryColor,
+                                                fontSize: 18.sp,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(width: 16.w),
+                                            _buildQuantityButton(
+                                              context: context,
+                                              icon: Icons.add,
+                                              onTap: () {
+                                                _updateQuantity(
+                                                  context,
+                                                  currentProduct.id,
+                                                  'plus',
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return BlocBuilder<
+                                  ProductDetailsCubit,
+                                  ProductDetailsState
+                                >(
+                                  builder: (context, state) {
+                                    final isLoading = state is AddToCartLoading;
+                                    return PrimaryButton(
+                                      title: isLoading
+                                          ? 'Adding to Cart...'
+                                          : 'Add to Cart',
+                                      onPressed: isLoading
+                                          ? () {}
+                                          : () {
+                                              context
+                                                  .read<ProductDetailsCubit>()
+                                                  .addToCart(
+                                                    productId:
+                                                        currentProduct.id,
+                                                  );
+                                            },
+                                    );
+                                  },
                                 );
                               },
                             ),
                             SizedBox(height: 16.h),
+                            if (currentProduct.reviews.isNotEmpty) ...[
+                              Text(
+                                'Reviews',
+                                style: TextStyle(
+                                  color: AppColors.blackTextColor,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: currentProduct.reviews.length,
+                                separatorBuilder: (_, __) =>
+                                    SizedBox(height: 6.h),
+                                itemBuilder: (context, index) {
+                                  final review = currentProduct.reviews[index];
+                                  return Container(
+                                    padding: EdgeInsets.all(6.w),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(
+                                        color: AppColors.overlayColor,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                review.userName.isNotEmpty
+                                                    ? review.userName
+                                                    : 'Anonymous',
+                                                style: TextStyle(
+                                                  color:
+                                                      AppColors.blackTextColor,
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Row(
+                                              children: List.generate(5, (
+                                                star,
+                                              ) {
+                                                return Icon(
+                                                  star < review.rating.floor()
+                                                      ? Icons.star
+                                                      : Icons.star_border,
+                                                  color: Colors.amber,
+                                                  size: 16.sp,
+                                                );
+                                              }),
+                                            ),
+                                          ],
+                                        ),
+                                        if (review.comment.isNotEmpty) ...[
+                                          SizedBox(height: 8.h),
+                                          Text(
+                                            review.comment,
+                                            style: TextStyle(
+                                              color: AppColors.greyTextColor,
+                                              fontSize: 14.sp,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                        if (review.createdAt.isNotEmpty) ...[
+                                          SizedBox(height: 8.h),
+                                          Text(
+                                            review.createdAt,
+                                            style: TextStyle(
+                                              color: AppColors.greyTextColor,
+                                              fontSize: 12.sp,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                              SizedBox(height: 24.h),
+                            ],
                             OutlinedButton.icon(
                               onPressed: () async {
                                 final result = await Navigator.pushNamed(
@@ -302,6 +511,49 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildQuantityButton({
+    required BuildContext context,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36.w,
+        height: 36.w,
+        decoration: BoxDecoration(
+          color: AppColors.primaryColor,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20.sp),
+      ),
+    );
+  }
+
+  void _updateQuantity(
+    BuildContext context,
+    int productId,
+    String method,
+  ) async {
+    final productsService = di.sl<ProductsService>();
+    try {
+      await productsService.addToCart(productId: productId, method: method);
+      if (context.mounted) {
+        context.read<CartCubit>().getCart();
+        context.read<ProductDetailsCubit>().getProductDetails(productId);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update cart: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildDetailRow(String label, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
@@ -333,4 +585,3 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 }
-

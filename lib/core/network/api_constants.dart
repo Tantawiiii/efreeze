@@ -17,5 +17,8 @@ final class ApiConstants {
   static const String offers = '/api/front/offers';
   static const String updateProfile = '/api/front/update-profile';
   static const String contactUs = '/api/contacts';
+  static const String checkAuth = '/api/front/check-auth';
+  
+  static String orderDetails(String orderNumber) => '/api/front/order/$orderNumber';
 }
 

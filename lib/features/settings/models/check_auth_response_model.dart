@@ -1,20 +1,20 @@
 import '../../auth/models/user_model.dart';
 
-class UpdateProfileResponseModel {
+class CheckAuthResponseModel {
   final String result;
   final UserModel data;
   final String message;
   final int status;
 
-  UpdateProfileResponseModel({
+  CheckAuthResponseModel({
     required this.result,
     required this.data,
     required this.message,
     required this.status,
   });
 
-  factory UpdateProfileResponseModel.fromJson(Map<String, dynamic> json) {
-    return UpdateProfileResponseModel(
+  factory CheckAuthResponseModel.fromJson(Map<String, dynamic> json) {
+    return CheckAuthResponseModel(
       result: json['result'] as String,
       data: UserModel.fromJson(json['data'] as Map<String, dynamic>),
       message: json['message'] as String,
@@ -31,8 +31,6 @@ class UpdateProfileResponseModel {
     };
   }
 }
-
-
 
 
 
