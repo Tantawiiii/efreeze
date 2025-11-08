@@ -1,22 +1,22 @@
-import '../../auth/models/user_model.dart';
+import 'order_details_model.dart';
 
-class UpdateProfileResponseModel {
+class OrderDetailsResponseModel {
   final String result;
-  final UserModel data;
+  final OrderDetailsModel data;
   final String message;
   final int status;
 
-  UpdateProfileResponseModel({
+  OrderDetailsResponseModel({
     required this.result,
     required this.data,
     required this.message,
     required this.status,
   });
 
-  factory UpdateProfileResponseModel.fromJson(Map<String, dynamic> json) {
-    return UpdateProfileResponseModel(
+  factory OrderDetailsResponseModel.fromJson(Map<String, dynamic> json) {
+    return OrderDetailsResponseModel(
       result: json['result'] as String,
-      data: UserModel.fromJson(json['data'] as Map<String, dynamic>),
+      data: OrderDetailsModel.fromJson(json['data'] as Map<String, dynamic>),
       message: json['message'] as String,
       status: json['status'] as int,
     );
@@ -31,8 +31,6 @@ class UpdateProfileResponseModel {
     };
   }
 }
-
-
 
 
 

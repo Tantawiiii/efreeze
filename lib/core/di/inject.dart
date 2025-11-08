@@ -21,6 +21,8 @@ import '../../features/reviews/cubit/review_cubit.dart';
 import '../../features/settings/services/settings_service.dart';
 import '../../features/settings/cubit/update_profile_cubit.dart';
 import '../../features/settings/cubit/contact_us_cubit.dart';
+import '../../features/settings/cubit/user_info_cubit.dart';
+import '../../features/settings/cubit/order_details_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -81,4 +83,6 @@ Future<void> init() async {
   // Settings Cubits
   sl.registerFactory(() => UpdateProfileCubit(sl<AuthService>()));
   sl.registerFactory(() => ContactUsCubit(sl<SettingsService>()));
+  sl.registerFactory(() => UserInfoCubit(sl<SettingsService>()));
+  sl.registerFactory(() => OrderDetailsCubit(sl<SettingsService>()));
 }

@@ -1,3 +1,5 @@
+import 'review_model.dart';
+
 class ProductModel {
   final int id;
   final String name;
@@ -16,6 +18,7 @@ class ProductModel {
   final bool active;
   final double averageRating;
   final int reviewsCount;
+  final List<ReviewModel> reviews;
   final String mobile;
   final String type;
   final String typeSilicone;
@@ -51,6 +54,7 @@ class ProductModel {
     required this.active,
     required this.averageRating,
     required this.reviewsCount,
+    required this.reviews,
     required this.mobile,
     required this.type,
     required this.typeSilicone,
@@ -90,19 +94,23 @@ class ProductModel {
       active: json['active'] as bool,
       averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
       reviewsCount: json['reviews_count'] as int? ?? 0,
+      reviews: (json['reviews'] as List<dynamic>?)
+              ?.map((item) => ReviewModel.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
       mobile: json['mobile'] as String? ?? '',
-      type: json['type'] as String,
-      typeSilicone: json['type_silicone'] as String,
-      hardness: json['hardness'] as String,
-      bio: json['bio'] as String,
-      timeInEar: json['time_in_ear'] as String,
-      endCuring: json['end_curing'] as String,
-      viscosity: json['viscosity'] as String,
-      color: json['color'] as String,
-      packaging: json['packaging'] as String,
-      itemNumber: json['item_number'] as String,
-      mixGun: json['mix_gun'] as String,
-      mixCanules: json['mix_canules'] as String,
+      type: json['type'] as String? ?? '',
+      typeSilicone: json['type_silicone'] as String? ?? '',
+      hardness: json['hardness'] as String? ?? '',
+      bio: json['bio'] as String? ?? '',
+      timeInEar: json['time_in_ear'] as String? ?? '',
+      endCuring: json['end_curing'] as String? ?? '',
+      viscosity: json['viscosity'] as String? ?? '',
+      color: json['color'] as String? ?? '',
+      packaging: json['packaging'] as String? ?? '',
+      itemNumber: json['item_number'] as String? ?? '',
+      mixGun: json['mix_gun'] as String? ?? '',
+      mixCanules: json['mix_canules'] as String? ?? '',
       createdAt:
           json['createdAt'] as String? ?? json['created_at'] as String? ?? '',
       updatedAt:
@@ -130,6 +138,7 @@ class ProductModel {
       'active': active,
       'average_rating': averageRating,
       'reviews_count': reviewsCount,
+      'reviews': reviews.map((r) => r.toJson()).toList(),
       'mobile': mobile,
       'type': type,
       'type_silicone': typeSilicone,

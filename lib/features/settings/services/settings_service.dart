@@ -20,6 +20,27 @@ class SettingsService {
       rethrow;
     }
   }
+
+  Future<Response> checkAuth() async {
+    try {
+      final response = await _apiService.get(ApiConstants.checkAuth);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Response> getOrderDetails(String orderNumber) async {
+    try {
+      final response = await _apiService.get(
+        ApiConstants.orderDetails(orderNumber),
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
+
 
 

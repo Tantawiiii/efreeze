@@ -1,42 +1,30 @@
-import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import '../../auth/services/auth_service.dart';
-import '../models/update_profile_response_model.dart';
+import '../models/order_details_model.dart';
+import '../models/order_details_response_model.dart';
+import '../services/settings_service.dart';
 
-part 'update_profile_state.dart';
+part 'order_details_state.dart';
 
-class UpdateProfileCubit extends Cubit<UpdateProfileState> {
-  final AuthService _authService;
+class OrderDetailsCubit extends Cubit<OrderDetailsState> {
+  final SettingsService _settingsService;
 
-  UpdateProfileCubit(this._authService) : super(UpdateProfileInitial());
+  OrderDetailsCubit(this._settingsService) : super(OrderDetailsInitial());
 
-  /// Update user profile
-  Future<void> updateProfile({
-    required String name,
-    required String email,
-    required String phone,
-    String? password,
-    File? avatar,
-  }) async {
-    emit(UpdateProfileLoading());
+  /// Fetch order details
+  Future<void> getOrderDetails(String orderNumber) async {
+    emit(OrderDetailsLoading());
 
     try {
-      final response = await _authService.updateProfile(
-        name: name,
-        email: email,
-        phone: phone,
-        password: password,
-        avatar: avatar,
-      );
+      final response = await _settingsService.getOrderDetails(orderNumber);
 
-      final updateProfileResponse = UpdateProfileResponseModel.fromJson(
+      final orderDetailsResponse = OrderDetailsResponseModel.fromJson(
         response.data as Map<String, dynamic>,
       );
 
-      emit(UpdateProfileSuccess(updateProfileResponse));
+      emit(OrderDetailsSuccess(orderDetailsResponse.data));
     } catch (e) {
-      String errorMessage = 'Failed to update profile. Please try again.';
+      String errorMessage = 'Failed to load order details. Please try again.';
 
       if (e is DioException) {
         if (e.response != null) {
@@ -58,17 +46,15 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
         }
       }
 
-      emit(UpdateProfileFailure(errorMessage));
+      emit(OrderDetailsFailure(errorMessage));
     }
   }
 
   /// Reset to initial state
   void reset() {
-    emit(UpdateProfileInitial());
+    emit(OrderDetailsInitial());
   }
 }
-
-
 
 
 

@@ -21,29 +21,25 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 2;
-  late final List<Widget> _screens;
 
-  @override
-  void initState() {
-    super.initState();
-    _screens = [
-      _buildWishlistScreen(),
-      _buildCartScreen(),
-      _buildHomeScreen(),
-      _buildSearchScreen(),
-      _buildSettingsScreen(),
-    ];
-  }
-
-  void _onNavItemTapped(int index) {
+  void _onNavItemTapped(BuildContext context, int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    if (index == 1 || index == 0) {
-      // Refresh cart And FAv data when
+    if (index == 1) {
+      // Refresh cart when cart tab is selected
       WidgetsBinding.instance.addPostFrameCallback((_) {
-
+        if (mounted) {
+          context.read<CartCubit>().getCart();
+        }
+      });
+    } else if (index == 0) {
+      // Refresh favorites when favorites tab is selected
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<FavoritesCubit>().getFavorites();
+        }
       });
     }
   }
@@ -62,18 +58,31 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           create: (context) => di.sl<SearchCubit>(),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        extendBody: true,
-        resizeToAvoidBottomInset: true,
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: CustomBottomNavBar(
-          selectedIndex: _selectedIndex,
-          onTap: _onNavItemTapped,
-        ),
+      child: Builder(
+        builder: (builderContext) {
+          // Build screens here after providers are available
+          final screens = [
+            _buildWishlistScreen(),
+            _buildCartScreen(),
+            _buildHomeScreen(),
+            _buildSearchScreen(),
+            _buildSettingsScreen(),
+          ];
+
+          return Scaffold(
+            backgroundColor: AppColors.white,
+            extendBody: true,
+            resizeToAvoidBottomInset: true,
+            body: IndexedStack(
+              index: _selectedIndex,
+              children: screens,
+            ),
+            bottomNavigationBar: CustomBottomNavBar(
+              selectedIndex: _selectedIndex,
+              onTap: (index) => _onNavItemTapped(builderContext, index),
+            ),
+          );
+        },
       ),
     );
   }

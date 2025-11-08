@@ -1,8 +1,7 @@
-import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:url_launcher/url_launcher.dart' as launcher;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../core/constant/app_colors.dart';
 
 class ProductImageSlider extends StatefulWidget {
@@ -24,6 +23,7 @@ class ProductImageSlider extends StatefulWidget {
 class _ProductImageSliderState extends State<ProductImageSlider> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  YoutubePlayerController? _youtubeController;
 
   List<String> get _allImages {
     final List<String> images = [];
@@ -41,20 +41,52 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
         }
       }
     }
-    
+
     return images;
+  }
+
+  String? _extractVideoId(String url) {
+    try {
+      final uri = Uri.parse(url);
+      if (uri.host.contains('youtube.com') || uri.host.contains('youtu.be')) {
+        return YoutubePlayer.convertUrlToId(url);
+      }
+    } catch (e) {
+      // Invalid URL
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.linkVideo != null && widget.linkVideo!.isNotEmpty) {
+      final videoId = _extractVideoId(widget.linkVideo!);
+      if (videoId != null) {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: videoId,
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: false,
+            enableCaption: true,
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _youtubeController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final images = _allImages;
-    final hasVideo = widget.linkVideo != null && widget.linkVideo!.isNotEmpty;
+    final hasVideo = _youtubeController != null;
+    // Video comes last, so total items = images.length + (hasVideo ? 1 : 0)
     final totalItems = images.length + (hasVideo ? 1 : 0);
 
     if (totalItems == 0) {
@@ -85,13 +117,13 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
             },
             itemCount: totalItems,
             itemBuilder: (context, index) {
-              if (hasVideo && index == 0) {
+              // Video comes last, so if index equals images.length, show video
+              if (hasVideo && index == images.length) {
                 return _buildVideoItem();
               }
-              final imageIndex = hasVideo ? index - 1 : index;
-              
-              if (imageIndex < images.length) {
-                return _buildImageItem(images[imageIndex]);
+              // Otherwise show image
+              if (index < images.length) {
+                return _buildImageItem(images[index]);
               }
               return _buildPlaceholder();
             },
@@ -125,60 +157,19 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
   }
 
   Widget _buildVideoItem() {
-    return GestureDetector(
-      onTap: () async {
-        if (widget.linkVideo != null && widget.linkVideo!.isNotEmpty) {
-          try {
-            final uri = Uri.parse(widget.linkVideo!);
-            await launcher.launchUrl(
-              uri,
-              mode: launcher.LaunchMode.externalApplication,
-            );
-          } catch (e) {
-            // Handle any errors silently
-            // The video link might not be launchable, but we still show the UI
-          }
-        }
-      },
-      child: Container(
-        color: AppColors.overlayColor,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.black.withOpacity(0.3),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.play_circle_filled,
-                  color: Colors.white,
-                  size: 80.sp,
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  AppTexts.videoAvailable,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  AppTexts.tapToPlay,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+    if (_youtubeController == null) {
+      return _buildPlaceholder();
+    }
+
+    return Container(
+      color: Colors.black,
+      child: YoutubePlayer(
+        controller: _youtubeController!,
+        showVideoProgressIndicator: true,
+        progressIndicatorColor: AppColors.primaryColor,
+        onReady: () {
+          // Video is ready to play
+        },
       ),
     );
   }
@@ -190,9 +181,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
       width: double.infinity,
       height: double.infinity,
       placeholder: (context, url) => Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primaryColor,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
       ),
       errorWidget: (context, url, error) => _buildPlaceholder(),
     );
@@ -211,4 +200,3 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
     );
   }
 }
-

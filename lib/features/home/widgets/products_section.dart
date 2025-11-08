@@ -6,6 +6,9 @@ import '../../../core/routing/app_routes.dart';
 import '../cubit/products_cubit.dart';
 import '../models/product_model.dart';
 import '../../favorites/cubit/favorites_cubit.dart';
+import '../../cart/cubit/cart_cubit.dart';
+import '../../home/services/products_service.dart';
+import '../../../core/di/inject.dart' as di;
 import 'product_card.dart';
 
 class ProductsSection extends StatefulWidget {
@@ -48,12 +51,8 @@ class _ProductsSectionState extends State<ProductsSection> {
         if (state is ProductsLoading) {
           isLoading = true;
         } else if (state is ProductsSuccess) {
-          // Only show products if they match our section type
-          // Since we're calling methods sequentially, we'll show the last loaded data
           products = state.response.data;
         }
-
-        // Get only first 5 products for home screen
         final displayProducts = products.take(5).toList();
 
         return Column(
@@ -98,7 +97,7 @@ class _ProductsSectionState extends State<ProductsSection> {
             ),
             SizedBox(height: 12.h),
             SizedBox(
-              height: 280.h,
+              height: 300.h,
               child: isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
@@ -121,39 +120,71 @@ class _ProductsSectionState extends State<ProductsSection> {
                           itemCount: displayProducts.length,
                           itemBuilder: (context, index) {
                             final product = displayProducts[index];
-                            return BlocBuilder<FavoritesCubit, FavoritesState>(
-                              builder: (context, favoritesState) {
-                                // Check if product is in favorites
-                                bool isFavorite = false;
-                                if (favoritesState is FavoritesSuccess) {
-                                  isFavorite = favoritesState.response.data
-                                      .any((fav) => fav.card.id == product.id);
+                            return BlocBuilder<CartCubit, CartState>(
+                              builder: (context, cartState) {
+                                int cartQuantity = 0;
+                                if (cartState is CartSuccess) {
+                                  try {
+                                    final cartItem = cartState.response.data
+                                        .firstWhere(
+                                          (item) => item.cardId == product.id,
+                                        );
+                                    cartQuantity = cartItem.quantity;
+                                  } catch (e) {
+                                    cartQuantity = 0;
+                                  }
                                 }
 
-                                return ProductCard(
-                                  title: product.name,
-                                  description: product.shortDescription,
-                                  currentPrice: '${product.price} ${product.currency}',
-                                  originalPrice: '${product.oldPrice} ${product.currency}',
-                                  discount: '${product.discount}%',
-                                  rating: product.averageRating,
-                                  reviewCount: product.reviewsCount,
-                                  imageUrl: product.image,
-                                  isFavorite: isFavorite,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.productDetails,
-                                      arguments: {
-                                        'productId': product.id,
-                                      },
-                                    );
-                                  },
-                                  onFavoriteTap: () {
-                                    context.read<FavoritesCubit>().toggleFavorite(
-                                          cardId: product.id,
-                                          method: isFavorite ? 'delete' : 'add',
+                                return BlocBuilder<FavoritesCubit, FavoritesState>(
+                                  builder: (context, favoritesState) {
+                                    bool isFavorite = false;
+                                    if (favoritesState is FavoritesSuccess) {
+                                      isFavorite = favoritesState.response.data
+                                          .any((fav) => fav.card.id == product.id);
+                                    }
+
+                                    return ProductCard(
+                                      title: product.name,
+                                      description: product.shortDescription,
+                                      currentPrice: '${product.price} ${product.currency}',
+                                      originalPrice: '${product.oldPrice} ${product.currency}',
+                                      discount: '${product.discount}%',
+                                      rating: product.averageRating,
+                                      reviewCount: product.reviewsCount,
+                                      imageUrl: product.image,
+                                      isFavorite: isFavorite,
+                                      cartQuantity: cartQuantity > 0 ? cartQuantity : null,
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.productDetails,
+                                          arguments: {
+                                            'productId': product.id,
+                                          },
                                         );
+                                      },
+                                      onFavoriteTap: () {
+                                        context.read<FavoritesCubit>().toggleFavorite(
+                                              cardId: product.id,
+                                              method: isFavorite ? 'delete' : 'add',
+                                            );
+                                      },
+                                      onAddToCart: cartQuantity > 0
+                                          ? null
+                                          : () {
+                                              _addToCart(context, product.id);
+                                            },
+                                      onRemoveFromCart: cartQuantity > 0
+                                          ? () {
+                                              _updateCart(context, product.id, 'minus');
+                                            }
+                                          : null,
+                                      onIncreaseQuantity: cartQuantity > 0
+                                          ? () {
+                                              _updateCart(context, product.id, 'plus');
+                                            }
+                                          : null,
+                                    );
                                   },
                                 );
                               },
@@ -165,6 +196,44 @@ class _ProductsSectionState extends State<ProductsSection> {
         );
       },
     );
+  }
+
+  void _addToCart(BuildContext context, int productId) async {
+    final productsService = di.sl<ProductsService>();
+    try {
+      await productsService.addToCart(productId: productId, method: 'add');
+      if (context.mounted) {
+        context.read<CartCubit>().getCart();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add to cart: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _updateCart(BuildContext context, int productId, String method) async {
+    final productsService = di.sl<ProductsService>();
+    try {
+      await productsService.addToCart(productId: productId, method: method);
+      if (context.mounted) {
+        context.read<CartCubit>().getCart();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update cart: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

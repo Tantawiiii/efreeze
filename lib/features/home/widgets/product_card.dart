@@ -14,6 +14,10 @@ class ProductCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
+  final int? cartQuantity;
+  final VoidCallback? onAddToCart;
+  final VoidCallback? onRemoveFromCart;
+  final VoidCallback? onIncreaseQuantity;
 
   const ProductCard({
     super.key,
@@ -28,6 +32,10 @@ class ProductCard extends StatelessWidget {
     this.onTap,
     this.isFavorite = false,
     this.onFavoriteTap,
+    this.cartQuantity,
+    this.onAddToCart,
+    this.onRemoveFromCart,
+    this.onIncreaseQuantity,
   });
 
   @override
@@ -175,6 +183,66 @@ class ProductCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (cartQuantity != null && cartQuantity! > 0) ...[
+                  SizedBox(height: 8.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: onRemoveFromCart,
+                          child: Icon(
+                            Icons.remove,
+                            size: 16.sp,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          cartQuantity.toString(),
+                          style: TextStyle(
+                            color: AppColors.primaryColor,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        GestureDetector(
+                          onTap: cartQuantity != null && cartQuantity! > 0
+                              ? onIncreaseQuantity
+                              : onAddToCart,
+                          child: Icon(
+                            Icons.add,
+                            size: 16.sp,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (onAddToCart != null) ...[
+                  SizedBox(height: 8.h),
+                  GestureDetector(
+                    onTap: onAddToCart,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 16.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
