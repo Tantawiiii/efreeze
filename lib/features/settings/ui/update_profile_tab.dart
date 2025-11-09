@@ -129,7 +129,7 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<UpdateProfileCubit, UpdateProfileState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is UpdateProfileSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -139,17 +139,22 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
           );
           // Update stored user data
           final storageService = di.sl<StorageService>();
-          storageService.saveUser(state.response.data);
+          await storageService.updateStoredUser(state.response.data);
+          _nameController.text = state.response.data.name;
+          _emailController.text = state.response.data.email;
+          _phoneController.text = state.response.data.phone;
+          if (mounted) {
+            setState(() {
+              _currentAvatarUrl = state.response.data.avatar;
+              _avatarFile = null;
+            });
+          }
           // Clear password fields
           _passwordController.clear();
           _confirmPasswordController.clear();
-          setState(() => _avatarFile = null);
         } else if (state is UpdateProfileFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         }
       },
@@ -171,10 +176,12 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
                       backgroundColor: AppColors.overlayColor,
                       backgroundImage: _avatarFile != null
                           ? FileImage(_avatarFile!)
-                          : (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty)
-                              ? NetworkImage(_currentAvatarUrl!)
-                              : null,
-                      child: _avatarFile == null &&
+                          : (_currentAvatarUrl != null &&
+                                _currentAvatarUrl!.isNotEmpty)
+                          ? NetworkImage(_currentAvatarUrl!)
+                          : null,
+                      child:
+                          _avatarFile == null &&
                               (_currentAvatarUrl == null ||
                                   _currentAvatarUrl!.isEmpty)
                           ? Icon(
@@ -192,10 +199,7 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
                         decoration: BoxDecoration(
                           color: AppColors.primaryColor,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: Icon(
                           Icons.camera_alt,
@@ -286,8 +290,8 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
                     onPressed: isLoading
                         ? null
                         : () => _handleUpdateProfile(
-                              context.read<UpdateProfileCubit>(),
-                            ),
+                            context.read<UpdateProfileCubit>(),
+                          ),
                   );
                 },
               ),
@@ -324,11 +328,7 @@ class _PickOption extends StatelessWidget {
               color: AppColors.primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primaryColor,
-              size: 32.sp,
-            ),
+            child: Icon(icon, color: AppColors.primaryColor, size: 32.sp),
           ),
           SizedBox(height: 8.h),
           Text(
@@ -344,8 +344,3 @@ class _PickOption extends StatelessWidget {
     );
   }
 }
-
-
-
-
-

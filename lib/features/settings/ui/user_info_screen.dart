@@ -1,9 +1,12 @@
+import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/di/inject.dart' as di;
+import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
+import '../../../core/services/storage_service.dart';
 import '../../auth/models/user_model.dart';
 import '../cubit/user_info_cubit.dart';
 
@@ -17,7 +20,7 @@ class UserInfoScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
-          title: const Text('My Account'),
+          title:  Text(AppTexts.myAccount),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -69,6 +72,8 @@ class UserInfoScreen extends StatelessWidget {
                     SizedBox(height: 32.h),
                     // Orders Section
                     _buildOrdersSection(context, state.orders),
+                    SizedBox(height: 32.h),
+                    _buildDeleteAccountSection(context),
                   ],
                 ),
               );
@@ -92,7 +97,7 @@ class UserInfoScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar
+
           CircleAvatar(
             radius: 50.r,
             backgroundColor: AppColors.textFieldBorderColor,
@@ -108,7 +113,6 @@ class UserInfoScreen extends StatelessWidget {
                 : null,
           ),
           SizedBox(height: 16.h),
-          // Name
           Text(
             user.name,
             style: TextStyle(
@@ -118,7 +122,6 @@ class UserInfoScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 8.h),
-          // Email
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -138,7 +141,6 @@ class UserInfoScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 8.h),
-          // Phone
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -167,7 +169,7 @@ class UserInfoScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Orders',
+          AppTexts.orders,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -191,7 +193,7 @@ class UserInfoScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  'No orders yet',
+                  AppTexts.noOrdersYet,
                   style: TextStyle(
                     fontSize: 16.sp,
                     color: AppColors.greyTextColor,
@@ -211,7 +213,6 @@ class UserInfoScreen extends StatelessWidget {
   }
 
   Widget _buildOrderCard(BuildContext context, dynamic order, int index) {
-    // Handle different order data structures
     String orderId = '';
     String orderNumber = '';
     String orderStatus = '';
@@ -236,12 +237,19 @@ class UserInfoScreen extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
+      onTap: () async {
+        final result = await Navigator.pushNamed(
           context,
           AppRoutes.orderDetails,
           arguments: {'orderNumber': orderNumber},
         );
+        if (!context.mounted) return;
+        if (result == true) {
+          final cubit = context.read<UserInfoCubit>();
+          if (!cubit.isClosed) {
+            cubit.checkAuth();
+          }
+        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -344,6 +352,92 @@ class UserInfoScreen extends StatelessWidget {
         return Colors.red;
       default:
         return AppColors.primaryColor;
+    }
+  }
+
+  Widget _buildDeleteAccountSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Divider(),
+        SizedBox(height: 16.h),
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.red,
+            side: const BorderSide(color: Colors.red),
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+          onPressed: () => _confirmDeleteAccount(context),
+          child: Text(
+            AppTexts.deleteAccount,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppTexts.deleteAccountConfirmationTitle),
+        content: Text(AppTexts.deleteAccountConfirmationMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(AppTexts.close),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              AppTexts.deleteAccount,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final cubit = context.read<UserInfoCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final result = await cubit.deleteAccount();
+    if (!context.mounted) return;
+
+    if (result == null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(AppTexts.deleteAccountSuccess),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      await di.sl<StorageService>().clearAuthData();
+      di.sl<DioClient>().clearAuthToken();
+
+      if (!context.mounted) return;
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.login,
+        (route) => false,
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(result),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

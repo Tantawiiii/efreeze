@@ -8,4 +8,7 @@ final class AppAssets {
   static const String onboard3Img = 'assets/pngs/onboard3.png';
 
 
+  static const String newLogoSplash = 'assets/pngs/new_logo.jpeg';
+
+
 }

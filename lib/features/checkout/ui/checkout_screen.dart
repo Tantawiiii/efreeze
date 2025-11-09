@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -14,10 +15,7 @@ import '../../cart/models/cart_item_model.dart';
 class CheckoutScreen extends StatefulWidget {
   final List<CartItemModel> cartItems;
 
-  const CheckoutScreen({
-    super.key,
-    required this.cartItems,
-  });
+  const CheckoutScreen({super.key, required this.cartItems});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -49,10 +47,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _submitOrder(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       final cards = widget.cartItems.map((item) {
-        return OrderCardModel(
-          id: item.cardId,
-          qty: item.quantity,
-        );
+        return OrderCardModel(id: item.cardId, qty: item.quantity);
       }).toList();
 
       final orderData = CreateOrderRequestModel(
@@ -87,10 +82,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             );
             // Navigate to home
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRoutes.home,
-              (route) => false,
-            );
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
           } else if (state is OrderFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -103,7 +97,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Scaffold(
           backgroundColor: AppColors.white,
           appBar: AppBar(
-            title: const Text('Checkout'),
+            title: Text(AppTexts.checkout),
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
@@ -117,7 +111,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   children: [
                     // Contact Information
                     Text(
-                      'Contact Information',
+                      AppTexts.contactInformation,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -127,14 +121,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _emailController,
-                      hint: 'Email',
+                      hint: AppTexts.email,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return AppTexts.pleaseEnterEmail;
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                          return AppTexts.pleaseEnterValidEmail;
                         }
                         return null;
                       },
@@ -142,11 +136,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _phoneController,
-                      hint: 'Phone',
+                      hint: AppTexts.phone,
                       keyboardType: TextInputType.phone,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
+                          return AppTexts.pleaseEnterPhone;
                         }
                         return null;
                       },
@@ -155,7 +149,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                     // Shipping Address
                     Text(
-                      'Shipping Address',
+                      AppTexts.shippingAddress,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -165,10 +159,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _addressLineController,
-                      hint: 'Address Line',
+                      hint: AppTexts.addressLine,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your address';
+                          return AppTexts.pleaseEnterAddress;
                         }
                         return null;
                       },
@@ -179,10 +173,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Expanded(
                           child: AppTextField(
                             controller: _cityController,
-                            hint: 'City',
+                            hint: AppTexts.city,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter city';
+                                return AppTexts.pleaseEnterCity;
                               }
                               return null;
                             },
@@ -192,10 +186,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Expanded(
                           child: AppTextField(
                             controller: _stateController,
-                            hint: 'State',
+                            hint: AppTexts.state,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter state';
+                                return AppTexts.pleaseEnterState;
                               }
                               return null;
                             },
@@ -206,11 +200,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _zipCodeController,
-                      hint: 'Zip Code',
+                      hint: AppTexts.zipCode,
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter zip code';
+                          return AppTexts.pleaseEnterZipCode;
                         }
                         return null;
                       },
@@ -219,7 +213,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                     // Payment Method
                     Text(
-                      'Payment Method',
+                      AppTexts.paymentMethod,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -261,7 +255,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                   SizedBox(width: 8.w),
                                   Text(
-                                    'Card',
+                                    AppTexts.card,
                                     style: TextStyle(
                                       color: _paymentMethod == 'card'
                                           ? AppColors.primaryColor
@@ -308,7 +302,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ),
                                   SizedBox(width: 8.w),
                                   Text(
-                                    'Cash',
+                                    AppTexts.cash,
                                     style: TextStyle(
                                       color: _paymentMethod == 'cash'
                                           ? AppColors.primaryColor
@@ -328,7 +322,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                     // Promo Code
                     Text(
-                      'Promo Code (Optional)',
+                      AppTexts.promoCodeOptional,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -338,7 +332,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _promoCodeController,
-                      hint: 'Enter promo code',
+                      hint: AppTexts.enterPromoCode,
                     ),
                     SizedBox(height: 32.h),
 
@@ -347,7 +341,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       builder: (context, state) {
                         final isLoading = state is OrderLoading;
                         return PrimaryButton(
-                          title: isLoading ? 'Processing...' : 'Place Order',
+                          title: isLoading
+                              ? AppTexts.processing
+                              : AppTexts.placeOrder,
                           onPressed: isLoading
                               ? null
                               : () => _submitOrder(context),
@@ -365,4 +361,3 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 }
-

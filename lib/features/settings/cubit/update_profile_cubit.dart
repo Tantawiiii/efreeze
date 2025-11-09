@@ -11,7 +11,6 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
 
   UpdateProfileCubit(this._authService) : super(UpdateProfileInitial());
 
-  /// Update user profile
   Future<void> updateProfile({
     required String name,
     required String email,
@@ -62,13 +61,7 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
     }
   }
 
-  /// Reset to initial state
   void reset() {
     emit(UpdateProfileInitial());
   }
 }
-
-
-
-
-

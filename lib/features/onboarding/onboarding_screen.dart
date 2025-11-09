@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constant/app_assets.dart';
 import '../../core/constant/app_colors.dart';
 import '../../core/routing/app_routes.dart';
+import '../../shared/widgets/language_switcher.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -61,13 +62,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: Row(
                 children: [
-                  Text('${_index + 1}/${_pages.length}',
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 14.sp,
-                      )),
+                  Text(
+                    '${_index + 1}/${_pages.length}',
+                    style: TextStyle(
+                      color: AppColors.greyTextColor,
+                      fontSize: 14.sp,
+                    ),
+                  ),
                   const Spacer(),
-                  TextButton(onPressed: _skip, child: const Text(AppTexts.skip)),
+                  const LanguageSwitcher(compact: true),
+                  SizedBox(width: 8.w),
+                  TextButton(
+                    onPressed: _skip,
+                    child: Text(AppTexts.skip),
+                  ),
                 ],
               ),
             ),
@@ -93,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               duration: const Duration(milliseconds: 250),
                               curve: Curves.easeInOut,
                             ),
-                    child: const Text(AppTexts.prev),
+                    child: Text(AppTexts.prev),
                   ),
                   const Spacer(),
                   ElevatedButton(

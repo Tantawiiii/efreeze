@@ -57,7 +57,39 @@ class UserInfoCubit extends Cubit<UserInfoState> {
   void reset() {
     emit(UserInfoInitial());
   }
+
+  Future<String?> deleteAccount() async {
+    try {
+      await _settingsService.deleteAccount();
+      return null;
+    } catch (e) {
+      String errorMessage = 'Failed to delete account. Please try again.';
+
+      if (e is DioException) {
+        if (e.response != null) {
+          final errorData = e.response?.data;
+          if (errorData is Map && errorData.containsKey('message')) {
+            errorMessage = errorData['message'].toString();
+          } else if (errorData is Map && errorData.containsKey('error')) {
+            errorMessage = errorData['error'].toString();
+          } else {
+            errorMessage = e.response?.statusMessage ?? errorMessage;
+          }
+        } else if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout) {
+          errorMessage =
+              'Connection timeout. Please check your internet connection.';
+        } else if (e.type == DioExceptionType.connectionError) {
+          errorMessage = 'No internet connection. Please check your network.';
+        }
+      }
+
+      return errorMessage;
+    }
+  }
 }
+
 
 
 

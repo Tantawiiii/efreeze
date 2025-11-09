@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -34,8 +35,8 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
     if (_formKey.currentState!.validate()) {
       if (_selectedRating == 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select a rating'),
+          SnackBar(
+            content: Text(AppTexts.pleaseSelectRating),
             backgroundColor: Colors.red,
           ),
         );
@@ -76,7 +77,7 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
         child: Scaffold(
           backgroundColor: AppColors.white,
           appBar: AppBar(
-            title: const Text('Add Review'),
+            title: Text(AppTexts.addReview),
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
@@ -89,7 +90,7 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Rate this product',
+                      AppTexts.rateThisProduct,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -125,7 +126,7 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                     ),
                     SizedBox(height: 32.h),
                     Text(
-                      'Write your review',
+                      AppTexts.writeYourReview,
                       style: TextStyle(
                         color: AppColors.blackTextColor,
                         fontSize: 18.sp,
@@ -135,15 +136,15 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                     SizedBox(height: 16.h),
                     AppTextField(
                       controller: _commentController,
-                      hint: 'Share your experience...',
+                      hint: AppTexts.shareYourExperience,
                       keyboardType: TextInputType.multiline,
                       maxLines: 6,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Please write a review';
+                          return AppTexts.pleaseWriteReview;
                         }
                         if (value.trim().length < 10) {
-                          return 'Review must be at least 10 characters';
+                          return AppTexts.reviewMinCharacters;
                         }
                         return null;
                       },
@@ -153,7 +154,9 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                       builder: (context, state) {
                         final isLoading = state is ReviewLoading;
                         return PrimaryButton(
-                          title: isLoading ? 'Submitting...' : 'Submit Review',
+                          title: isLoading
+                              ? AppTexts.submitting
+                              : AppTexts.submitReview,
                           onPressed: isLoading
                               ? null
                               : () => _submitReview(context),

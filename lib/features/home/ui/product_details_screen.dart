@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -26,8 +27,6 @@ class ProductDetailsScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) {
-            // Try to get existing CartCubit from context if available
-            // This works when navigating from MainNavigationScreen
             try {
               final existingCubit = context.read<CartCubit>();
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,8 +34,6 @@ class ProductDetailsScreen extends StatelessWidget {
               });
               return existingCubit;
             } catch (e) {
-              // If not available (e.g., deep link or different route),
-              // create a new instance from DI
               final newCubit = di.sl<CartCubit>();
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 newCubit.getCart();
@@ -102,7 +99,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             productId,
                           );
                         },
-                        child: const Text('Retry'),
+                        child: Text(AppTexts.retry),
                       ),
                     ],
                   ),
@@ -176,7 +173,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(6.r),
                                   ),
                                   child: Text(
-                                    '${currentProduct.discount}% Off',
+                                    '${currentProduct.discount}% ${AppTexts.off}',
                                     style: TextStyle(
                                       color: Colors.red,
                                       fontSize: 14.sp,
@@ -201,7 +198,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                 }),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  '${currentProduct.averageRating.toStringAsFixed(1)} (${currentProduct.reviewsCount} reviews)',
+                                  '${currentProduct.averageRating.toStringAsFixed(1)} (${currentProduct.reviewsCount} ${AppTexts.reviewsCountLabel})',
                                   style: TextStyle(
                                     color: AppColors.greyTextColor,
                                     fontSize: 14.sp,
@@ -212,7 +209,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             SizedBox(height: 24.h),
 
                             Text(
-                              'Description',
+                              AppTexts.description,
                               style: TextStyle(
                                 color: AppColors.blackTextColor,
                                 fontSize: 18.sp,
@@ -233,7 +230,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                 currentProduct.color.isNotEmpty ||
                                 currentProduct.quantity > 0) ...[
                               Text(
-                                'Product Details',
+                                AppTexts.productDetails,
                                 style: TextStyle(
                                   color: AppColors.blackTextColor,
                                   fontSize: 18.sp,
@@ -242,16 +239,24 @@ class ProductDetailsScreen extends StatelessWidget {
                               ),
                               SizedBox(height: 12.h),
                               if (currentProduct.type.isNotEmpty)
-                                _buildDetailRow('Type', currentProduct.type),
+                                _buildDetailRow(
+                                  AppTexts.type,
+                                  currentProduct.type,
+                                ),
                               if (currentProduct.color.isNotEmpty)
-                                _buildDetailRow('Color', currentProduct.color),
+                                _buildDetailRow(
+                                  AppTexts.color,
+                                  currentProduct.color,
+                                ),
                               if (currentProduct.quantity > 0)
                                 _buildDetailRow(
-                                  'Quantity Available',
+                                  AppTexts.quantityAvailable,
                                   currentProduct.quantity.toString(),
                                 ),
                               SizedBox(height: 24.h),
                             ],
+                            _buildConfidenceSection(currentProduct),
+                            SizedBox(height: 24.h),
                             BlocBuilder<CartCubit, CartState>(
                               builder: (context, cartState) {
                                 int cartQuantity = 0;
@@ -264,13 +269,11 @@ class ProductDetailsScreen extends StatelessWidget {
                                         );
                                     cartQuantity = cartItem.quantity;
                                   } catch (e) {
-                                    // Product not in cart
                                     cartQuantity = 0;
                                   }
                                 }
 
                                 if (cartQuantity > 0) {
-                                  // Show quantity controls if product is in cart
                                   return Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16.w,
@@ -291,7 +294,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'In Cart',
+                                          AppTexts.inCart,
                                           style: TextStyle(
                                             color: AppColors.primaryColor,
                                             fontSize: 16.sp,
@@ -346,8 +349,8 @@ class ProductDetailsScreen extends StatelessWidget {
                                     final isLoading = state is AddToCartLoading;
                                     return PrimaryButton(
                                       title: isLoading
-                                          ? 'Adding to Cart...'
-                                          : 'Add to Cart',
+                                          ? AppTexts.addingToCart
+                                          : AppTexts.addToCart,
                                       onPressed: isLoading
                                           ? () {}
                                           : () {
@@ -366,7 +369,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             SizedBox(height: 16.h),
                             if (currentProduct.reviews.isNotEmpty) ...[
                               Text(
-                                'Reviews',
+                                AppTexts.reviewsTitle,
                                 style: TextStyle(
                                   color: AppColors.blackTextColor,
                                   fontSize: 18.sp,
@@ -402,7 +405,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                               child: Text(
                                                 review.userName.isNotEmpty
                                                     ? review.userName
-                                                    : 'Anonymous',
+                                                    : AppTexts.anonymous,
                                                 style: TextStyle(
                                                   color:
                                                       AppColors.blackTextColor,
@@ -476,7 +479,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                 color: AppColors.primaryColor,
                               ),
                               label: Text(
-                                'Write a Review',
+                                AppTexts.writeAReview,
                                 style: TextStyle(
                                   color: AppColors.primaryColor,
                                   fontSize: 14.sp,
@@ -507,6 +510,71 @@ class ProductDetailsScreen extends StatelessWidget {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildConfidenceSection(ProductModel product) {
+    final items = <String>[
+      AppTexts.secureTransaction,
+      AppTexts.safeDelivery,
+      AppTexts.returnIn15Days,
+    ];
+
+    if (product.freeDelivery) {
+      items.add(AppTexts.freeDelivery);
+    }
+    if (product.oneYearWarranty) {
+      items.add(AppTexts.oneYearWarranty);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppTexts.shopWithConfidence,
+          style: TextStyle(
+            color: AppColors.blackTextColor,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Wrap(
+          spacing: 10.w,
+          runSpacing: 10.h,
+          children: items.map(_buildConfidenceChip).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfidenceChip(String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            color: AppColors.primaryColor,
+            size: 18.sp,
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: AppColors.blackTextColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -546,7 +614,7 @@ class ProductDetailsScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update cart: ${e.toString()}'),
+            content: Text('${AppTexts.failedToUpdateCart}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );

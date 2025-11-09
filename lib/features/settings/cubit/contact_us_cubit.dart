@@ -1,17 +1,17 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import '../services/settings_service.dart';
-import '../models/contact_us_request_model.dart';
-import '../models/contact_us_response_model.dart';
+import 'package:efreeze/features/contact_us/servises/contact_servises.dart';
+
+import '../../contact_us/models/contact_us_request_model.dart';
+import '../../contact_us/models/contact_us_response_model.dart';
 
 part 'contact_us_state.dart';
 
 class ContactUsCubit extends Cubit<ContactUsState> {
-  final SettingsService _settingsService;
+  final ContactService _contactService;
 
-  ContactUsCubit(this._settingsService) : super(ContactUsInitial());
+  ContactUsCubit(this._contactService) : super(ContactUsInitial());
 
-  /// Send contact us message
   Future<void> sendContactMessage({
     required String name,
     required String email,
@@ -28,7 +28,7 @@ class ContactUsCubit extends Cubit<ContactUsState> {
         message: message,
       );
 
-      final response = await _settingsService.contactUs(request);
+      final response = await _contactService.contactUs(request);
 
       final responseData = response.data as Map<String, dynamic>;
       final contactUsResponse = ContactUsResponseModel.fromJson(responseData);
@@ -61,9 +61,7 @@ class ContactUsCubit extends Cubit<ContactUsState> {
     }
   }
 
-  /// Reset to initial state
   void reset() {
     emit(ContactUsInitial());
   }
 }
-

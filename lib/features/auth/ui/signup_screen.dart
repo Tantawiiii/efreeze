@@ -8,10 +8,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../core/constant/app_colors.dart';
-import '../../shared/widgets/app_text_field.dart';
-import '../../shared/widgets/primary_button.dart';
-import 'cubit/signup_cubit.dart';
+import '../../../core/constant/app_colors.dart';
+import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/primary_button.dart';
+import '../cubit/signup_cubit.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -133,7 +133,7 @@ class _SignupScreenState extends State<SignupScreen> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text(AppTexts.createAcc),
+            title: Text(AppTexts.createAcc),
             backgroundColor: Colors.transparent,
           ),
           backgroundColor: AppColors.white,

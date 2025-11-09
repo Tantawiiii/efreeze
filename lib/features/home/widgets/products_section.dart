@@ -1,6 +1,8 @@
+import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
 import '../cubit/products_cubit.dart';
@@ -46,8 +48,6 @@ class _ProductsSectionState extends State<ProductsSection> {
       builder: (context, state) {
         List<ProductModel> products = [];
         bool isLoading = false;
-
-        // Check if this section's data is loaded
         if (state is ProductsLoading) {
           isLoading = true;
         } else if (state is ProductsSuccess) {
@@ -59,7 +59,7 @@ class _ProductsSectionState extends State<ProductsSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.symmetric(horizontal: 10.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -84,7 +84,7 @@ class _ProductsSectionState extends State<ProductsSection> {
                         );
                       },
                       child: Text(
-                        'see all',
+                        AppTexts.seeAll,
                         style: TextStyle(
                           color: AppColors.primaryColor,
                           fontSize: 14.sp,
@@ -99,100 +99,206 @@ class _ProductsSectionState extends State<ProductsSection> {
             SizedBox(
               height: 300.h,
               child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
+                  ? _buildLoadingShimmer()
+                  : displayProducts.isEmpty
+                  ? Center(
+                      child: Text(
+                        AppTexts.noAvailableProducts,
+                        style: TextStyle(
+                          color: AppColors.greyTextColor,
+                          fontSize: 14.sp,
+                        ),
                       ),
                     )
-                  : displayProducts.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No products available',
-                            style: TextStyle(
-                              color: AppColors.greyTextColor,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: 20.w),
-                          itemCount: displayProducts.length,
-                          itemBuilder: (context, index) {
-                            final product = displayProducts[index];
-                            return BlocBuilder<CartCubit, CartState>(
-                              builder: (context, cartState) {
-                                int cartQuantity = 0;
-                                if (cartState is CartSuccess) {
-                                  try {
-                                    final cartItem = cartState.response.data
-                                        .firstWhere(
-                                          (item) => item.cardId == product.id,
-                                        );
-                                    cartQuantity = cartItem.quantity;
-                                  } catch (e) {
-                                    cartQuantity = 0;
-                                  }
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      itemCount: displayProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = displayProducts[index];
+                        return BlocBuilder<CartCubit, CartState>(
+                          builder: (context, cartState) {
+                            int cartQuantity = 0;
+                            if (cartState is CartSuccess) {
+                              try {
+                                final cartItem = cartState.response.data
+                                    .firstWhere(
+                                      (item) => item.cardId == product.id,
+                                    );
+                                cartQuantity = cartItem.quantity;
+                              } catch (e) {
+                                cartQuantity = 0;
+                              }
+                            }
+
+                            return BlocBuilder<FavoritesCubit, FavoritesState>(
+                              builder: (context, favoritesState) {
+                                bool isFavorite = false;
+                                if (favoritesState is FavoritesSuccess) {
+                                  isFavorite = favoritesState.response.data.any(
+                                    (fav) => fav.card.id == product.id,
+                                  );
                                 }
 
-                                return BlocBuilder<FavoritesCubit, FavoritesState>(
-                                  builder: (context, favoritesState) {
-                                    bool isFavorite = false;
-                                    if (favoritesState is FavoritesSuccess) {
-                                      isFavorite = favoritesState.response.data
-                                          .any((fav) => fav.card.id == product.id);
-                                    }
-
-                                    return ProductCard(
-                                      title: product.name,
-                                      description: product.shortDescription,
-                                      currentPrice: '${product.price} ${product.currency}',
-                                      originalPrice: '${product.oldPrice} ${product.currency}',
-                                      discount: '${product.discount}%',
-                                      rating: product.averageRating,
-                                      reviewCount: product.reviewsCount,
-                                      imageUrl: product.image,
-                                      isFavorite: isFavorite,
-                                      cartQuantity: cartQuantity > 0 ? cartQuantity : null,
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          AppRoutes.productDetails,
-                                          arguments: {
-                                            'productId': product.id,
-                                          },
-                                        );
-                                      },
-                                      onFavoriteTap: () {
-                                        context.read<FavoritesCubit>().toggleFavorite(
-                                              cardId: product.id,
-                                              method: isFavorite ? 'delete' : 'add',
-                                            );
-                                      },
-                                      onAddToCart: cartQuantity > 0
-                                          ? null
-                                          : () {
-                                              _addToCart(context, product.id);
-                                            },
-                                      onRemoveFromCart: cartQuantity > 0
-                                          ? () {
-                                              _updateCart(context, product.id, 'minus');
-                                            }
-                                          : null,
-                                      onIncreaseQuantity: cartQuantity > 0
-                                          ? () {
-                                              _updateCart(context, product.id, 'plus');
-                                            }
-                                          : null,
+                                return ProductCard(
+                                  title: product.name,
+                                  description: product.shortDescription,
+                                  currentPrice:
+                                      '${product.price} ${product.currency}',
+                                  originalPrice:
+                                      '${product.oldPrice} ${product.currency}',
+                                  discount: '${product.discount}%',
+                                  rating: product.averageRating,
+                                  reviewCount: product.reviewsCount,
+                                  imageUrl: product.image,
+                                  isFavorite: isFavorite,
+                                  cartQuantity: cartQuantity > 0
+                                      ? cartQuantity
+                                      : null,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.productDetails,
+                                      arguments: {'productId': product.id},
                                     );
                                   },
+                                  onFavoriteTap: () {
+                                    context
+                                        .read<FavoritesCubit>()
+                                        .toggleFavorite(
+                                          cardId: product.id,
+                                          method: isFavorite ? 'delete' : 'add',
+                                        );
+                                  },
+                                  onAddToCart: cartQuantity > 0
+                                      ? null
+                                      : () {
+                                          _addToCart(context, product.id);
+                                        },
+                                  onRemoveFromCart: cartQuantity > 0
+                                      ? () {
+                                          _updateCart(
+                                            context,
+                                            product.id,
+                                            'minus',
+                                          );
+                                        }
+                                      : null,
+                                  onIncreaseQuantity: cartQuantity > 0
+                                      ? () {
+                                          _updateCart(
+                                            context,
+                                            product.id,
+                                            'plus',
+                                          );
+                                        }
+                                      : null,
                                 );
                               },
                             );
                           },
-                        ),
+                        );
+                      },
+                    ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingShimmer() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.only(right: index == 2 ? 0 : 16.w),
+          child: Shimmer.fromColors(
+            baseColor: AppColors.textFieldBorderColor,
+            highlightColor: AppColors.white,
+            period: const Duration(milliseconds: 1200),
+            child: Container(
+              width: 230.w,
+              decoration: BoxDecoration(
+                color: AppColors.overlayColor,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 160.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Container(
+                    width: 160.w,
+                    height: 16.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    width: 120.w,
+                    height: 14.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: [
+                      Container(
+                        width: 80.w,
+                        height: 18.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textFieldBorderColor,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Container(
+                          height: 18.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.textFieldBorderColor,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+                  Row(
+                    children: List.generate(
+                      3,
+                      (buttonIndex) => Expanded(
+                        child: Container(
+                          height: 32.h,
+                          margin: EdgeInsets.only(
+                            right: buttonIndex == 2 ? 0 : 8.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.textFieldBorderColor,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -236,5 +342,3 @@ class _ProductsSectionState extends State<ProductsSection> {
     }
   }
 }
-
-

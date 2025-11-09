@@ -21,6 +21,13 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 2;
+  final ValueNotifier<int> _homeRefreshNotifier = ValueNotifier<int>(0);
+
+  @override
+  void dispose() {
+    _homeRefreshNotifier.dispose();
+    super.dispose();
+  }
 
   void _onNavItemTapped(BuildContext context, int index) {
     setState(() {
@@ -41,6 +48,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           context.read<FavoritesCubit>().getFavorites();
         }
       });
+    } else if (index == 2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _homeRefreshNotifier.value++;
+        }
+      });
     }
   }
 
@@ -52,7 +65,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           create: (context) => di.sl<CartCubit>()..getCart(),
         ),
         BlocProvider(
-          create: (context) => di.sl<FavoritesCubit>(),
+          create: (context) => di.sl<FavoritesCubit>()..getFavorites(),
         ),
         BlocProvider(
           create: (context) => di.sl<SearchCubit>(),
@@ -88,7 +101,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildHomeScreen() {
-    return const HomeScreen();
+    return HomeScreen(
+      key: const ValueKey('home_screen'),
+      refreshTrigger: _homeRefreshNotifier,
+    );
   }
 
   Widget _buildCartScreen() {
