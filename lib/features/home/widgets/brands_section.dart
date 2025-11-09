@@ -1,8 +1,10 @@
+import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/localization/language_cubit.dart';
 import '../../../core/routing/app_routes.dart';
 import '../cubit/categories_cubit.dart';
 import '../models/category_model.dart';
@@ -24,13 +26,14 @@ class _BrandsSectionState extends State<BrandsSection> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageCubit>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           child: Text(
-            'All Brands',
+            AppTexts.allBrands,
             style: TextStyle(
               color: AppColors.blackTextColor,
               fontSize: 18.sp,
@@ -79,7 +82,7 @@ class _BrandsSectionState extends State<BrandsSection> {
                   height: 100.h,
                   child: Center(
                     child: Text(
-                      'No categories available',
+                      AppTexts.noBrandsAvailable,
                       style: TextStyle(
                         color: AppColors.greyTextColor,
                         fontSize: 12.sp,
@@ -93,7 +96,7 @@ class _BrandsSectionState extends State<BrandsSection> {
                 height: 100.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   itemCount: categories.length,
                   itemBuilder: (context, index) {
                     final category = categories[index];

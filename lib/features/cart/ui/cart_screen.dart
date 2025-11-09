@@ -1,8 +1,10 @@
+import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/localization/language_cubit.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
 import '../cubit/cart_cubit.dart';
@@ -25,7 +27,6 @@ class _CartScreenState extends State<CartScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Always refresh cart on first frame when screen is created
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CartCubit>().getCart();
@@ -42,7 +43,6 @@ class _CartScreenState extends State<CartScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // Refresh cart when app comes to foreground
     if (state == AppLifecycleState.resumed && mounted) {
       context.read<CartCubit>().getCart();
     }
@@ -51,9 +51,9 @@ class _CartScreenState extends State<CartScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    context.watch<LanguageCubit>();
     return BlocListener<CartCubit, CartState>(
       listener: (context, state) {
-        // Auto-refresh when coming back to this screen
         if (state is CartInitial) {
           context.read<CartCubit>().getCart();
         }
@@ -61,7 +61,7 @@ class _CartScreenState extends State<CartScreen>
       child: Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: const Text('Cart'),
+        title:  Text(AppTexts.cart),
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -94,7 +94,7 @@ class _CartScreenState extends State<CartScreen>
                     onPressed: () {
                       context.read<CartCubit>().getCart();
                     },
-                    child: const Text('Retry'),
+                    child: Text(AppTexts.retry),
                   ),
                 ],
               ),
@@ -116,7 +116,7 @@ class _CartScreenState extends State<CartScreen>
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      'Your cart is empty',
+                      AppTexts.cartEmpty,
                       style: TextStyle(
                         color: AppColors.greyTextColor,
                         fontSize: 18.sp,
@@ -125,7 +125,7 @@ class _CartScreenState extends State<CartScreen>
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      'Add items to your cart to see them here',
+                      AppTexts.addItemsToCart,
                       style: TextStyle(
                         color: AppColors.greyTextColor,
                         fontSize: 14.sp,
@@ -166,7 +166,7 @@ class _CartScreenState extends State<CartScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Total',
+                             AppTexts.total,
                             style: TextStyle(
                               color: AppColors.blackTextColor,
                               fontSize: 18.sp,
@@ -202,7 +202,7 @@ class _CartScreenState extends State<CartScreen>
                             ),
                           ),
                           child: Text(
-                            'Checkout',
+                            AppTexts.checkout,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16.sp,
@@ -239,7 +239,6 @@ class _CartScreenState extends State<CartScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Image
           Container(
             width: 80.w,
             height: 80.w,
@@ -273,7 +272,6 @@ class _CartScreenState extends State<CartScreen>
                   ),
           ),
           SizedBox(width: 12.w),
-          // Product Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +296,6 @@ class _CartScreenState extends State<CartScreen>
                   ),
                 ),
                 SizedBox(height: 8.h),
-                // Quantity Controls
                 Row(
                   children: [
                     _buildQuantityButton(
@@ -384,7 +381,7 @@ class _CartScreenState extends State<CartScreen>
 
   String _calculateTotal(List<CartItemModel> cartItems) {
     double total = 0.0;
-    String currency = 'EGP';
+    String currency = AppTexts.eGP;
 
     for (var item in cartItems) {
       final product = item.card;

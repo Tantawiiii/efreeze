@@ -26,18 +26,39 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    int parseInt(dynamic value, {int defaultValue = 0}) {
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      return defaultValue;
+    }
+
+    List<dynamic> parseList(dynamic value) {
+      if (value is List<dynamic>) return value;
+      return [];
+    }
+
+    String? parseNullableString(dynamic value) {
+      if (value == null) return null;
+      return value.toString();
+    }
+
+    String parseString(dynamic value, {String fallback = ''}) {
+      if (value == null) return fallback;
+      return value.toString();
+    }
+
     return UserModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      role: json['role'] as String,
-      email: json['email'] as String,
-      avatar: json['avatar'] as String?,
-      favorites: json['favorites'] as List<dynamic>? ?? [],
-      orders: json['orders'] as List<dynamic>? ?? [],
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
-      deletedAt: json['deletedAt'] as String?,
+      id: parseInt(json['id']),
+      name: parseString(json['name']),
+      phone: parseString(json['phone']),
+      role: parseString(json['role']),
+      email: parseString(json['email']),
+      avatar: parseNullableString(json['avatar']),
+      favorites: parseList(json['favorites']),
+      orders: parseList(json['orders']),
+      createdAt: parseString(json['createdAt'] ?? json['created_at']),
+      updatedAt: parseString(json['updatedAt'] ?? json['updated_at']),
+      deletedAt: parseNullableString(json['deletedAt'] ?? json['deleted_at']),
     );
   }
 

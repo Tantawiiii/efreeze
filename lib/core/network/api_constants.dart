@@ -20,5 +20,9 @@ final class ApiConstants {
   static const String checkAuth = '/api/front/check-auth';
   
   static String orderDetails(String orderNumber) => '/api/front/order/$orderNumber';
+  static String deleteOrder(int orderId) => '/api/front/order/$orderId';
+  static String orderChangeStatus(int orderId) => '/api/orders/change-status/$orderId';
+  static String orderById(int orderId) => '/api/orders/$orderId';
+  static const String deleteAccount = '/api/user/delete';
 }
 

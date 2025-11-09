@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
+import '../../../core/localization/language_cubit.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../core/network/dio_client.dart';
+import '../../../shared/widgets/language_switcher.dart';
 import '../../auth/services/auth_service.dart';
 import '../cubit/update_profile_cubit.dart';
-import '../cubit/contact_us_cubit.dart';
+import '../../contact_us/cubit/contact_us_cubit.dart';
 import 'update_profile_tab.dart';
-import 'contact_us_tab.dart';
+import '../../contact_us/ui/contact_us_tab.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: AppColors.white,
             appBar: AppBar(
-              title: const Text('Update Profile'),
+              title: Text(AppTexts.updateProfile),
               backgroundColor: Colors.transparent,
               elevation: 0,
             ),
@@ -43,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: AppColors.white,
             appBar: AppBar(
-              title: const Text('Contact Us'),
+              title: Text(AppTexts.contactUs),
               backgroundColor: Colors.transparent,
               elevation: 0,
             ),
@@ -58,16 +61,16 @@ class SettingsScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+        title: Text(AppTexts.logout),
+        content: Text(AppTexts.logoutConfirmationMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(AppTexts.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Logout'),
+            child: Text(AppTexts.logout),
           ),
         ],
       ),
@@ -96,10 +99,11 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageCubit>();
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(AppTexts.settings),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -107,25 +111,32 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           ListTile(
+            leading: const Icon(Icons.language_outlined),
+            title: Text(AppTexts.language),
+            subtitle: Text(AppTexts.changeLanguage),
+            trailing: const LanguageSwitcher(),
+          ),
+          const Divider(height: 1),
+          ListTile(
             leading: const Icon(Icons.person_outline),
-            title: const Text('Update Profile'),
-            subtitle: const Text('Edit your info'),
+            title: Text(AppTexts.updateProfile),
+            subtitle: Text(AppTexts.editYourInfo),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _openUpdateProfile(context),
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.support_agent_outlined),
-            title: const Text('Contact Us'),
-            subtitle: const Text('Send us a message'),
+            title: Text(AppTexts.contactUs),
+            subtitle: Text(AppTexts.sendUsMessage),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _openContactUs(context),
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout'),
-            subtitle: const Text('Sign out and return to login'),
+            title: Text(AppTexts.logout),
+            subtitle: Text(AppTexts.signOutReturn),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _logout(context),
           ),

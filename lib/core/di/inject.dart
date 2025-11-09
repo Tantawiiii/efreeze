@@ -1,8 +1,11 @@
+import 'package:efreeze/features/contact_us/servises/contact_servises.dart';
+import 'package:efreeze/features/orders/services/orders_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../network/dio_client.dart';
 import '../network/api_service.dart';
 import '../services/storage_service.dart';
+import '../localization/language_cubit.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/auth/cubit/signup_cubit.dart';
 import '../../features/auth/cubit/login_cubit.dart';
@@ -20,9 +23,9 @@ import '../../features/favorites/cubit/favorites_cubit.dart';
 import '../../features/reviews/cubit/review_cubit.dart';
 import '../../features/settings/services/settings_service.dart';
 import '../../features/settings/cubit/update_profile_cubit.dart';
-import '../../features/settings/cubit/contact_us_cubit.dart';
+import '../../features/contact_us/cubit/contact_us_cubit.dart';
 import '../../features/settings/cubit/user_info_cubit.dart';
-import '../../features/settings/cubit/order_details_cubit.dart';
+import '../../features/orders/cubit/order_details_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -51,6 +54,9 @@ Future<void> init() async {
 
   // Settings Service
   sl.registerLazySingleton(() => SettingsService(sl<ApiService>()));
+
+  // Localization Cubit
+  sl.registerLazySingleton(() => LanguageCubit(sl<StorageService>()));
 
   // Auth Cubits
   sl.registerFactory(() => SignupCubit(sl<AuthService>()));
@@ -82,7 +88,7 @@ Future<void> init() async {
 
   // Settings Cubits
   sl.registerFactory(() => UpdateProfileCubit(sl<AuthService>()));
-  sl.registerFactory(() => ContactUsCubit(sl<SettingsService>()));
+  sl.registerFactory(() => ContactUsCubit(sl<ContactService>()));
   sl.registerFactory(() => UserInfoCubit(sl<SettingsService>()));
-  sl.registerFactory(() => OrderDetailsCubit(sl<SettingsService>()));
+  sl.registerFactory(() => OrderDetailsCubit(sl<OrdersService >()));
 }

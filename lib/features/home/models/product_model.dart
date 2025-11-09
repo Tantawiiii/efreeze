@@ -35,6 +35,8 @@ class ProductModel {
   final String createdAt;
   final String updatedAt;
   final String? deletedAt;
+  final bool freeDelivery;
+  final bool oneYearWarranty;
 
   ProductModel({
     required this.id,
@@ -70,7 +72,9 @@ class ProductModel {
     required this.mixCanules,
     required this.createdAt,
     required this.updatedAt,
-    this.deletedAt,
+      this.deletedAt,
+      required this.freeDelivery,
+      required this.oneYearWarranty,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -116,6 +120,8 @@ class ProductModel {
       updatedAt:
           json['updatedAt'] as String? ?? json['updated_at'] as String? ?? '',
       deletedAt: json['deletedAt'] as String? ?? json['deleted_at'] as String?,
+      freeDelivery: json['free_delevery'] as bool? ?? false,
+      oneYearWarranty: json['one_year_warranty'] as bool? ?? false,
     );
   }
 
@@ -155,6 +161,8 @@ class ProductModel {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'deletedAt': deletedAt,
+      'free_delevery': freeDelivery,
+      'one_year_warranty': oneYearWarranty,
     };
   }
 }

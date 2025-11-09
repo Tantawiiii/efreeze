@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _checkAuthAndNavigate() {
-    Timer(const Duration(milliseconds: 1700), () {
+    Timer(const Duration(milliseconds: 2000), () {
       if (!mounted) return;
 
       final storageService = di.sl<StorageService>();
@@ -60,14 +60,14 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.splashBackground,
       body: Center(
         child: FadeTransition(
           opacity: _fade,
           child: ScaleTransition(
             scale: _scale,
             child: Image.asset(
-              AppAssets.appLogoSplashWithoutBAckImg,
+              AppAssets.newLogoSplash,
               width: 180.w,
               height: 180.w,
               fit: BoxFit.contain,

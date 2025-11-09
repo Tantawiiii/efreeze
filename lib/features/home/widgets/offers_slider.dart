@@ -1,7 +1,9 @@
+import 'package:efreeze/core/constant/app_texts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
 import '../cubit/offers_cubit.dart';
@@ -29,19 +31,7 @@ class _OffersSliderState extends State<OffersSlider> {
     return BlocBuilder<OffersCubit, OffersState>(
       builder: (context, state) {
         if (state is OffersLoading) {
-          return Container(
-            margin: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
-            height: 180.h,
-            decoration: BoxDecoration(
-              color: AppColors.overlayColor,
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            ),
-          );
+          return _buildLoadingShimmer();
         }
 
         if (state is OffersFailure) {
@@ -58,7 +48,7 @@ class _OffersSliderState extends State<OffersSlider> {
           return Column(
             children: [
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 16.h),
+                margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
                 height: 200.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
@@ -120,7 +110,6 @@ class _OffersSliderState extends State<OffersSlider> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Banner Image
               CachedNetworkImage(
                 imageUrl: offer.avatar,
                 fit: BoxFit.cover,
@@ -141,20 +130,15 @@ class _OffersSliderState extends State<OffersSlider> {
                   ),
                 ),
               ),
-              // Gradient overlay for better text readability
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.6),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
                   ),
                 ),
               ),
-              // Content overlay
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -189,7 +173,7 @@ class _OffersSliderState extends State<OffersSlider> {
                       Row(
                         children: [
                           Text(
-                            'View Product',
+                            AppTexts.viewProducts,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -228,5 +212,63 @@ class _OffersSliderState extends State<OffersSlider> {
       ),
     );
   }
-}
 
+  Widget _buildLoadingShimmer() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 16.h),
+      height: 200.h,
+      child: Shimmer.fromColors(
+        baseColor: AppColors.textFieldBorderColor,
+        highlightColor: AppColors.white,
+        period: const Duration(milliseconds: 1200),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: Container(
+            color: AppColors.textFieldBorderColor,
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  width: 180.w,
+                  height: 20.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.overlayColor,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Container(
+                  width: 140.w,
+                  height: 14.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.overlayColor,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Row(
+                  children: List.generate(
+                    3,
+                    (index) => Expanded(
+                      flex: index == 0 ? 2 : 1,
+                      child: Container(
+                        height: 12.h,
+                        margin: EdgeInsets.only(right: index == 2 ? 0 : 8.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.overlayColor,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../features/auth/ui/login_screen.dart';
 import 'app_routes.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
-import '../../features/auth/login_screen.dart';
-import '../../features/auth/signup_screen.dart';
+
+import '../../features/auth/ui/signup_screen.dart';
 import '../../features/home/ui/main_navigation_screen.dart';
 import '../../features/home/ui/category_products_screen.dart';
 import '../../features/home/ui/product_details_screen.dart';
@@ -15,7 +16,7 @@ import '../../features/home/ui/all_products_screen.dart';
 import '../../features/reviews/ui/add_review_screen.dart';
 import '../../features/settings/ui/settings_screen.dart';
 import '../../features/settings/ui/user_info_screen.dart';
-import '../../features/settings/ui/order_details_screen.dart';
+import '../../features/orders/ui/order_details_screen.dart';
 
 Route<dynamic> onGenerateAppRoute(RouteSettings settings) {
   switch (settings.name) {
