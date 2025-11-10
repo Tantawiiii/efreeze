@@ -38,7 +38,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => StorageService(sl<SharedPreferences>()));
 
   // Dio Client
-  sl.registerLazySingleton(() => DioClient());
+  sl.registerLazySingleton(
+    () => DioClient(storageService: sl<StorageService>()),
+  );
 
   // API Service
   sl.registerLazySingleton(() => ApiService(sl<DioClient>()));
@@ -54,6 +56,12 @@ Future<void> init() async {
 
   // Settings Service
   sl.registerLazySingleton(() => SettingsService(sl<ApiService>()));
+
+  // Contact Service
+  sl.registerLazySingleton(() => ContactService(sl<ApiService>()));
+
+  // Orders Service
+  sl.registerLazySingleton(() => OrdersService(sl<ApiService>()));
 
   // Localization Cubit
   sl.registerLazySingleton(() => LanguageCubit(sl<StorageService>()));
@@ -90,5 +98,5 @@ Future<void> init() async {
   sl.registerFactory(() => UpdateProfileCubit(sl<AuthService>()));
   sl.registerFactory(() => ContactUsCubit(sl<ContactService>()));
   sl.registerFactory(() => UserInfoCubit(sl<SettingsService>()));
-  sl.registerFactory(() => OrderDetailsCubit(sl<OrdersService >()));
+  sl.registerFactory(() => OrderDetailsCubit(sl<OrdersService>()));
 }

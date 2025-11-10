@@ -19,3 +19,4 @@ class ContactUsFailure extends ContactUsState {
 
   const ContactUsFailure(this.message);
 }
+
