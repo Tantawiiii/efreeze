@@ -65,3 +65,4 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
     emit(UpdateProfileInitial());
   }
 }
+

@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_constants.dart';
+import '../services/storage_service.dart';
 
 class DioClient {
-  late final Dio _dio;
+  DioClient({required StorageService storageService})
+    : _storageService = storageService {
+    final initialLanguage = storageService.getLanguageCode() ?? 'ar';
 
-  DioClient() {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
@@ -15,6 +17,7 @@ class DioClient {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'lang': initialLanguage,
         },
       ),
     );
@@ -22,7 +25,21 @@ class DioClient {
     _setupInterceptors();
   }
 
+  late final Dio _dio;
+  final StorageService _storageService;
+
   void _setupInterceptors() {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final languageCode = _storageService.getLanguageCode() ?? 'ar';
+          options.headers['lang'] = languageCode;
+          _dio.options.headers['lang'] = languageCode;
+          return handler.next(options);
+        },
+      ),
+    );
+
     _dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,
