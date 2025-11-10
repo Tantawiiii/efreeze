@@ -28,3 +28,4 @@ class SearchFailure extends SearchState {
 
 
 
+

@@ -243,10 +243,8 @@ final class AppTexts {
       AppLanguage.ar: 'جميع قطع الغيار الإلكترونية\nفي مكان واحد',
     },
     'onDesTitle1': {
-      AppLanguage.en:
-          'Discover a wide range of original electronic spare parts, all at your fingertips.',
-      AppLanguage.ar:
-          'اكتشف مجموعة واسعة من قطع الغيار الأصلية للأجهزة الإلكترونية، جميعها بين يديك.',
+      AppLanguage.en: 'Discover a wide range of original electronic spare parts, all at your fingertips.',
+      AppLanguage.ar: 'اكتشف مجموعة واسعة من قطع الغيار الأصلية للأجهزة الإلكترونية، جميعها بين يديك.',
     },
     'onTitle2': {
       AppLanguage.en: 'Search & Order Instantly',
@@ -263,8 +261,7 @@ final class AppTexts {
       AppLanguage.ar: 'توصيل سريع وآمن',
     },
     'onDesTitle3': {
-      AppLanguage.en:
-          'Get your orders delivered quickly and safely right to your doorstep.',
+      AppLanguage.en: 'Get your orders delivered quickly and safely right to your doorstep.',
       AppLanguage.ar: 'استلم طلباتك بسرعة وأمان حتى باب منزلك.',
     },
     'skip': {AppLanguage.en: 'Skip', AppLanguage.ar: 'تخطي'},
@@ -458,10 +455,7 @@ final class AppTexts {
     },
     'type': {AppLanguage.en: 'Type', AppLanguage.ar: 'النوع'},
     'color': {AppLanguage.en: 'Color', AppLanguage.ar: 'اللون'},
-    'quantityAvailable': {
-      AppLanguage.en: 'Quantity Available',
-      AppLanguage.ar: 'الكمية المتاحة',
-    },
+    'quantityAvailable': {AppLanguage.en: 'Quantity Available', AppLanguage.ar: 'الكمية المتاحة',},
     'inCart': {AppLanguage.en: 'In Cart', AppLanguage.ar: 'في السلة'},
     'addToCart': {
       AppLanguage.en: 'Add to Cart',
