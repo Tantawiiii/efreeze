@@ -76,15 +76,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _refreshHomeData();
   }
 
-  void _refreshHomeData() {
+  Future<void> _refreshHomeData() async {
     final providersContext = _providersContext;
     if (providersContext == null) {
       return;
     }
 
-    providersContext.read<CategoriesCubit>().getCategories();
-    providersContext.read<OffersCubit>().getOffers();
-    providersContext.read<FavoritesCubit>().getFavorites();
+    await Future.wait([
+      providersContext.read<CategoriesCubit>().getCategories(),
+      providersContext.read<OffersCubit>().getOffers(),
+      providersContext.read<FavoritesCubit>().getFavorites(),
+    ]);
+
+    if (!mounted) return;
+
     if (_hasRefreshedProducts) {
       setState(() {
         _refreshSeed++;
@@ -112,38 +117,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               child: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const HomeHeader(),
-                          const OffersSlider(),
-                          const BrandsSection(),
-                          SizedBox(height: 24.h),
-                          BlocProvider(
-                            key: ValueKey('all_products_provider_$_refreshSeed'),
-                            create: (context) => di.sl<ProductsCubit>(),
-                            child: ProductsSection(
+                    child: RefreshIndicator(
+                      color: AppColors.primaryColor,
+                      onRefresh: _refreshHomeData,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const HomeHeader(),
+                            const OffersSlider(),
+                            const BrandsSection(),
+                            SizedBox(height: 24.h),
+                            BlocProvider(
                               key: ValueKey(
-                                  'all_products_section_$_refreshSeed'),
-                              title: AppTexts.allProducts,
-                              isBestProducts: false,
+                                'all_products_provider_$_refreshSeed',
+                              ),
+                              create: (context) => di.sl<ProductsCubit>(),
+                              child: ProductsSection(
+                                key: ValueKey(
+                                  'all_products_section_$_refreshSeed',
+                                ),
+                                title: AppTexts.allProducts,
+                                isBestProducts: false,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 24.h),
-                          BlocProvider(
-                            key: ValueKey(
-                                'best_products_provider_$_refreshSeed'),
-                            create: (context) => di.sl<ProductsCubit>(),
-                            child: ProductsSection(
+                            SizedBox(height: 24.h),
+                            BlocProvider(
                               key: ValueKey(
-                                  'best_products_section_$_refreshSeed'),
-                              title: AppTexts.bestProducts,
-                              isBestProducts: true,
+                                'best_products_provider_$_refreshSeed',
+                              ),
+                              create: (context) => di.sl<ProductsCubit>(),
+                              child: ProductsSection(
+                                key: ValueKey(
+                                  'best_products_section_$_refreshSeed',
+                                ),
+                                title: AppTexts.bestProducts,
+                                isBestProducts: true,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 100.h),
-                        ],
+                            SizedBox(height: 100.h),
+                          ],
+                        ),
                       ),
                     ),
                   ),
