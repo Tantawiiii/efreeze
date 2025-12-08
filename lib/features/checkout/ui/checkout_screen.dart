@@ -31,6 +31,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _zipCodeController = TextEditingController();
   final _promoCodeController = TextEditingController();
   String _paymentMethod = 'card';
+  String _paymentType = 'cash';
 
   @override
   void dispose() {
@@ -50,6 +51,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return OrderCardModel(id: item.cardId, qty: item.quantity);
       }).toList();
 
+      final totalAmount = widget.cartItems.fold<double>(
+        0.0,
+        (sum, item) =>
+            sum + (double.tryParse(item.card.price) ?? 0.0) * item.quantity,
+      );
+
       final orderData = CreateOrderRequestModel(
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
@@ -58,10 +65,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         state: _stateController.text.trim(),
         zipCode: _zipCodeController.text.trim(),
         paymentMethod: _paymentMethod,
+        paymentType: _paymentType,
         promoCode: _promoCodeController.text.trim().isEmpty
             ? null
             : _promoCodeController.text.trim(),
         cards: cards,
+        totalAmount: totalAmount,
       );
 
       context.read<OrderCubit>().createOrder(orderData);
@@ -228,6 +237,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             onTap: () {
                               setState(() {
                                 _paymentMethod = 'card';
+                                _paymentType = 'card';
                               });
                             },
                             child: Container(
@@ -275,6 +285,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             onTap: () {
                               setState(() {
                                 _paymentMethod = 'cash';
+                                _paymentType = 'cash';
                               });
                             },
                             child: Container(

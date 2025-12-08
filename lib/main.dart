@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +15,23 @@ import 'core/services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set full screen mode
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+    overlays: [],
+  );
+  
+  // Set system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
   await di.init();
 
   final storageService = di.sl<StorageService>();
@@ -44,18 +62,26 @@ class MyApp extends StatelessWidget {
                   .map((lang) => lang.locale)
                   .toList(growable: false);
 
-              return MaterialApp(
-                title: 'EFreeze',
-                debugShowCheckedModeBanner: false,
-                locale: locale,
-                supportedLocales: supportedLocales,
-                localizationsDelegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                onGenerateRoute: onGenerateAppRoute,
-                initialRoute: AppRoutes.splash,
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: const SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: Brightness.dark,
+                  systemNavigationBarColor: Colors.transparent,
+                  systemNavigationBarIconBrightness: Brightness.dark,
+                ),
+                child: MaterialApp(
+                  title: 'EFreeze',
+                  debugShowCheckedModeBanner: false,
+                  locale: locale,
+                  supportedLocales: supportedLocales,
+                  localizationsDelegates: const [
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  onGenerateRoute: onGenerateAppRoute,
+                  initialRoute: AppRoutes.splash,
+                ),
               );
             },
           ),
