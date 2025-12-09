@@ -6,6 +6,8 @@ import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/product_details_cubit.dart';
 import '../models/product_model.dart';
 import '../widgets/product_image_slider.dart';
@@ -67,12 +69,68 @@ class ProductDetailsScreen extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: AppColors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: AppColors.blackTextColor),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
           body: BlocBuilder<ProductDetailsCubit, ProductDetailsState>(
             builder: (context, state) {
               if (state is ProductDetailsLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primaryColor,
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      ShimmerLoading(
+                        child: Container(
+                          width: double.infinity,
+                          height: 300.h,
+                          color: AppColors.textFieldBorderColor,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ShimmerLoading(
+                              child: Container(
+                                width: double.infinity,
+                                height: 24.h,
+                                decoration: BoxDecoration(
+                                  color: AppColors.textFieldBorderColor,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            ShimmerLoading(
+                              child: Container(
+                                width: 150.w,
+                                height: 20.h,
+                                decoration: BoxDecoration(
+                                  color: AppColors.textFieldBorderColor,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            ShimmerLoading(
+                              child: Container(
+                                width: double.infinity,
+                                height: 100.h,
+                                decoration: BoxDecoration(
+                                  color: AppColors.textFieldBorderColor,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -376,12 +434,11 @@ class ProductDetailsScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              ListView.separated(
+                              AnimatedListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: currentProduct.reviews.length,
-                                separatorBuilder: (_, __) =>
-                                    SizedBox(height: 6.h),
+                                separator: SizedBox(height: 6.h),
                                 itemBuilder: (context, index) {
                                   final review = currentProduct.reviews[index];
                                   return Container(

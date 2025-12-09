@@ -39,7 +39,7 @@ class ProductGridCard extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 140.h,
+                  height: 138.h,
                   decoration: BoxDecoration(
                     color: AppColors.overlayColor,
                     borderRadius: BorderRadius.vertical(
@@ -97,12 +97,13 @@ class ProductGridCard extends StatelessWidget {
                   ),
               ],
             ),
-            Expanded(
+            Flexible(
               child: Padding(
                 padding: EdgeInsets.all(8.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,16 +118,16 @@ class ProductGridCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          product.shortDescription,
-                          style: TextStyle(
-                            color: AppColors.greyTextColor,
-                            fontSize: 11.sp,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        // SizedBox(height: 4.h),
+                        // Text(
+                        //   product.shortDescription,
+                        //   style: TextStyle(
+                        //     color: AppColors.greyTextColor,
+                        //     fontSize: 11.sp,
+                        //   ),
+                        //   maxLines: 2,
+                        //   overflow: TextOverflow.ellipsis,
+                        // ),
                       ],
                     ),
                     Column(

@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/favorites_cubit.dart';
 import '../../home/widgets/product_grid_card.dart';
 
@@ -93,8 +95,16 @@ class _WishlistScreenState extends State<WishlistScreen>
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {
             if (state is FavoritesLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryColor),
+              return AnimatedGridView.builder(
+                padding: EdgeInsets.all(20.w),
+                crossAxisCount: 2,
+                crossAxisSpacing: 6.w,
+                mainAxisSpacing: 14.h,
+                childAspectRatio: 0.6,
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return ProductGridCardShimmer();
+                },
               );
             }
 
@@ -160,14 +170,12 @@ class _WishlistScreenState extends State<WishlistScreen>
                 );
               }
 
-              return GridView.builder(
+              return AnimatedGridView.builder(
                 padding: EdgeInsets.all(20.w),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 6.w,
-                  mainAxisSpacing: 14.h,
-                  childAspectRatio: 0.6,
-                ),
+                crossAxisCount: 2,
+                crossAxisSpacing: 6.w,
+                mainAxisSpacing: 14.h,
+                childAspectRatio: 0.6,
                 itemCount: favorites.length,
                 itemBuilder: (context, index) {
                   final favoriteItem = favorites[index];

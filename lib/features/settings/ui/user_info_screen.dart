@@ -7,6 +7,7 @@ import '../../../core/di/inject.dart' as di;
 import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/models/user_model.dart';
 import '../cubit/user_info_cubit.dart';
 
@@ -27,7 +28,45 @@ class UserInfoScreen extends StatelessWidget {
         body: BlocBuilder<UserInfoCubit, UserInfoState>(
           builder: (context, state) {
             if (state is UserInfoLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return SingleChildScrollView(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  children: [
+                    ShimmerLoading(
+                      child: Container(
+                        height: 200.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textFieldBorderColor,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 32.h),
+                    ShimmerLoading(
+                      child: Container(
+                        height: 24.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textFieldBorderColor,
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    ...List.generate(3, (index) => Padding(
+                      padding: EdgeInsets.only(bottom: 12.h),
+                      child: ShimmerLoading(
+                        child: Container(
+                          height: 100.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.textFieldBorderColor,
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    )),
+                  ],
+                ),
+              );
             }
 
             if (state is UserInfoFailure) {

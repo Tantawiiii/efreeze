@@ -43,7 +43,7 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      width: 180.w,
+      width: 200.w,
       margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -60,7 +60,7 @@ class ProductCard extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 120.h,
+                height: 136.h,
                 decoration: BoxDecoration(
                   color: AppColors.overlayColor,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
@@ -119,16 +119,16 @@ class ProductCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: AppColors.greyTextColor,
-                    fontSize: 11.sp,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                // SizedBox(height: 4.h),
+                // Text(
+                //   description,
+                //   style: TextStyle(
+                //     color: AppColors.greyTextColor,
+                //     fontSize: 11.sp,
+                //   ),
+                //   maxLines: 2,
+                //   overflow: TextOverflow.ellipsis,
+                // ),
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,

@@ -7,6 +7,8 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/localization/language_cubit.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/cart_cubit.dart';
 import '../../home/services/products_service.dart';
 import '../models/cart_item_model.dart';
@@ -69,8 +71,15 @@ class _CartScreenState extends State<CartScreen>
       body: BlocBuilder<CartCubit, CartState>(
         builder: (context, state) {
           if (state is CartInitial || state is CartLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryColor),
+            return ListView(
+              padding: EdgeInsets.all(20.w),
+              children: List.generate(
+                3,
+                (index) => Padding(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  child: ListItemShimmer(),
+                ),
+              ),
             );
           }
 
@@ -139,7 +148,7 @@ class _CartScreenState extends State<CartScreen>
             return Column(
               children: [
                 Expanded(
-                  child: ListView.builder(
+                  child: AnimatedListView.builder(
                     padding: EdgeInsets.all(20.w),
                     itemCount: cartItems.length,
                     itemBuilder: (context, index) {
