@@ -141,25 +141,11 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 itemCount: products.length,
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return BlocBuilder<FavoritesCubit, FavoritesState>(
-                    builder: (context, favoritesState) {
-                      bool isFavorite = false;
-                      if (favoritesState is FavoritesSuccess) {
-                        isFavorite = favoritesState.response.data
-                            .any((fav) => fav.card.id == product.id);
-                      }
-
-                      return ProductGridCard(
-                        product: product,
-                        isFavorite: isFavorite,
-                        onFavoriteTap: () {
-                          context.read<FavoritesCubit>().toggleFavorite(
-                                cardId: product.id,
-                                method: isFavorite ? 'delete' : 'add',
-                              );
-                        },
-                      );
-                    },
+                  return ProductGridCard(
+                    product: product,
+                    isFavorite: false,
+                    onFavoriteTap:
+                        null,
                   );
                 },
               );
@@ -172,4 +158,3 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
     );
   }
 }
-

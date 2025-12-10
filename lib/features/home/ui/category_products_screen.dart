@@ -125,30 +125,14 @@ class CategoryProductsScreen extends StatelessWidget {
                 childAspectRatio: 0.6,
                 itemCount: products.length,
                 itemBuilder: (context, index) {
-                    final product = products[index];
-                    return BlocBuilder<FavoritesCubit, FavoritesState>(
-                      builder: (context, favoritesState) {
-                        // Check if product is in favorites
-                        bool isFavorite = false;
-                        if (favoritesState is FavoritesSuccess) {
-                          isFavorite = favoritesState.response.data.any(
-                            (fav) => fav.card.id == product.id,
-                          );
-                        }
-
-                        return ProductGridCard(
-                          product: product,
-                          isFavorite: isFavorite,
-                          onFavoriteTap: () {
-                            context.read<FavoritesCubit>().toggleFavorite(
-                              cardId: product.id,
-                              method: isFavorite ? 'delete' : 'add',
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
+                  final product = products[index];
+                  return ProductGridCard(
+                    product: product,
+                    isFavorite: false,
+                    onFavoriteTap:
+                        null,
+                  );
+                },
               );
             }
 

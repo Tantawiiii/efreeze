@@ -182,13 +182,9 @@ class _WishlistScreenState extends State<WishlistScreen>
                   final product = favoriteItem.card;
                   return ProductGridCard(
                     product: product,
-                    isFavorite: true,
-                    onFavoriteTap: () {
-                      context.read<FavoritesCubit>().toggleFavorite(
-                        cardId: product.id,
-                        method: 'delete',
-                      );
-                    },
+                    isFavorite: true, // Will be handled by FavoriteButton
+                    onFavoriteTap:
+                        null, // FavoriteButton will handle this internally
                   );
                 },
               );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
+import '../../../shared/widgets/favorite_button.dart';
 
 class ProductCard extends StatelessWidget {
+  final int? productId;
   final String title;
   final String description;
   final String currentPrice;
@@ -21,6 +23,7 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     super.key,
+    this.productId,
     required this.title,
     required this.description,
     required this.currentPrice,
@@ -43,211 +46,202 @@ class ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      width: 200.w,
-      margin: EdgeInsets.only(right: 12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.textFieldBorderColor,
-          width: 1,
+        width: 200.w,
+        margin: EdgeInsets.only(right: 12.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: AppColors.textFieldBorderColor, width: 1),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 136.h,
-                decoration: BoxDecoration(
-                  color: AppColors.overlayColor,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-                ),
-                child: imageUrl != null
-                    ? ClipRRect(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(12.r)),
-                        child: Image.network(
-                          imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildPlaceholder(),
-                        ),
-                      )
-                    : _buildPlaceholder(),
-              ),
-              if (onFavoriteTap != null)
-                Positioned(
-                  top: 8.h,
-                  right: 8.w,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (onFavoriteTap != null) {
-                        onFavoriteTap!();
-                      }
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(6.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : AppColors.greyTextColor,
-                        size: 20.sp,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.all(12.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: AppColors.blackTextColor,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                // SizedBox(height: 4.h),
-                // Text(
-                //   description,
-                //   style: TextStyle(
-                //     color: AppColors.greyTextColor,
-                //     fontSize: 11.sp,
-                //   ),
-                //   maxLines: 2,
-                //   overflow: TextOverflow.ellipsis,
-                // ),
-                SizedBox(height: 8.h),
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 4.h,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      currentPrice,
-                      style: TextStyle(
-                        color: AppColors.primaryColor,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      originalPrice,
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 12.sp,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                    Text(
-                      '$discount Off',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    ...List.generate(5, (index) {
-                      return Icon(
-                        index < rating.floor()
-                            ? Icons.star
-                            : Icons.star_border,
-                        color: Colors.amber,
-                        size: 14.sp,
-                      );
-                    }),
-                    SizedBox(width: 4.w),
-                    Text(
-                      reviewCount.toString(),
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ],
-                ),
-                if (cartQuantity != null && cartQuantity! > 0) ...[
-                  SizedBox(height: 8.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: onRemoveFromCart,
-                          child: Icon(
-                            Icons.remove,
-                            size: 16.sp,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          cartQuantity.toString(),
-                          style: TextStyle(
-                            color: AppColors.primaryColor,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        GestureDetector(
-                          onTap: cartQuantity != null && cartQuantity! > 0
-                              ? onIncreaseQuantity
-                              : onAddToCart,
-                          child: Icon(
-                            Icons.add,
-                            size: 16.sp,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                      ],
+                Container(
+                  width: double.infinity,
+                  height: 136.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.overlayColor,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12.r),
                     ),
                   ),
-                ] else if (onAddToCart != null) ...[
-                  SizedBox(height: 8.h),
-                  GestureDetector(
-                    onTap: onAddToCart,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 16.sp,
-                        color: Colors.white,
-                      ),
+                  child: imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12.r),
+                          ),
+                          child: Image.network(
+                            imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildPlaceholder(),
+                          ),
+                        )
+                      : _buildPlaceholder(),
+                ),
+                if (productId != null)
+                  Positioned(
+                    top: 8.h,
+                    right: 8.w,
+                    child: FavoriteButton(
+                      productId: productId!,
+                      onTap: onFavoriteTap,
                     ),
                   ),
-                ],
               ],
             ),
-          ),
-        ],
-      ),
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: AppColors.blackTextColor,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // SizedBox(height: 4.h),
+                  // Text(
+                  //   description,
+                  //   style: TextStyle(
+                  //     color: AppColors.greyTextColor,
+                  //     fontSize: 11.sp,
+                  //   ),
+                  //   maxLines: 2,
+                  //   overflow: TextOverflow.ellipsis,
+                  // ),
+                  SizedBox(height: 8.h),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 4.h,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        currentPrice,
+                        style: TextStyle(
+                          color: AppColors.primaryColor,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        originalPrice,
+                        style: TextStyle(
+                          color: AppColors.greyTextColor,
+                          fontSize: 12.sp,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      Text(
+                        '$discount Off',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      ...List.generate(5, (index) {
+                        return Icon(
+                          index < rating.floor()
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                          size: 14.sp,
+                        );
+                      }),
+                      SizedBox(width: 4.w),
+                      Text(
+                        reviewCount.toString(),
+                        style: TextStyle(
+                          color: AppColors.greyTextColor,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (cartQuantity != null && cartQuantity! > 0) ...[
+                    SizedBox(height: 8.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: onRemoveFromCart,
+                            child: Icon(
+                              Icons.remove,
+                              size: 16.sp,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            cartQuantity.toString(),
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          GestureDetector(
+                            onTap: cartQuantity != null && cartQuantity! > 0
+                                ? onIncreaseQuantity
+                                : onAddToCart,
+                            child: Icon(
+                              Icons.add,
+                              size: 16.sp,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else if (onAddToCart != null) ...[
+                    SizedBox(height: 8.h),
+                    GestureDetector(
+                      onTap: onAddToCart,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 16.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -262,5 +256,3 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
-
-

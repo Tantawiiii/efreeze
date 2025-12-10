@@ -7,7 +7,6 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
 import '../cubit/products_cubit.dart';
 import '../models/product_model.dart';
-import '../../favorites/cubit/favorites_cubit.dart';
 import '../../cart/cubit/cart_cubit.dart';
 import '../../home/services/products_service.dart';
 import '../../../core/di/inject.dart' as di;
@@ -131,70 +130,45 @@ class _ProductsSectionState extends State<ProductsSection> {
                               }
                             }
 
-                            return BlocBuilder<FavoritesCubit, FavoritesState>(
-                              builder: (context, favoritesState) {
-                                bool isFavorite = false;
-                                if (favoritesState is FavoritesSuccess) {
-                                  isFavorite = favoritesState.response.data.any(
-                                    (fav) => fav.card.id == product.id,
-                                  );
-                                }
-
-                                return ProductCard(
-                                  title: product.name,
-                                  description: product.shortDescription,
-                                  currentPrice:
-                                      '${product.price} ${product.currency}',
-                                  originalPrice:
-                                      '${product.oldPrice} ${product.currency}',
-                                  discount: '${product.discount}%',
-                                  rating: product.averageRating,
-                                  reviewCount: product.reviewsCount,
-                                  imageUrl: product.image,
-                                  isFavorite: isFavorite,
-                                  cartQuantity: cartQuantity > 0
-                                      ? cartQuantity
-                                      : null,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.productDetails,
-                                      arguments: {'productId': product.id},
-                                    );
-                                  },
-                                  onFavoriteTap: () {
-                                    context
-                                        .read<FavoritesCubit>()
-                                        .toggleFavorite(
-                                          cardId: product.id,
-                                          method: isFavorite ? 'delete' : 'add',
-                                        );
-                                  },
-                                  onAddToCart: cartQuantity > 0
-                                      ? null
-                                      : () {
-                                          _addToCart(context, product.id);
-                                        },
-                                  onRemoveFromCart: cartQuantity > 0
-                                      ? () {
-                                          _updateCart(
-                                            context,
-                                            product.id,
-                                            'minus',
-                                          );
-                                        }
-                                      : null,
-                                  onIncreaseQuantity: cartQuantity > 0
-                                      ? () {
-                                          _updateCart(
-                                            context,
-                                            product.id,
-                                            'plus',
-                                          );
-                                        }
-                                      : null,
+                            return ProductCard(
+                              productId: product.id,
+                              title: product.name,
+                              description: product.shortDescription,
+                              currentPrice:
+                                  '${product.price} ${product.currency}',
+                              originalPrice:
+                                  '${product.oldPrice} ${product.currency}',
+                              discount: '${product.discount}%',
+                              rating: product.averageRating,
+                              reviewCount: product.reviewsCount,
+                              imageUrl: product.image,
+                              cartQuantity: cartQuantity > 0
+                                  ? cartQuantity
+                                  : null,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.productDetails,
+                                  arguments: {'productId': product.id},
                                 );
                               },
+                              onFavoriteTap:
+                                  null, // FavoriteButton will handle this internally
+                              onAddToCart: cartQuantity > 0
+                                  ? null
+                                  : () {
+                                      _addToCart(context, product.id);
+                                    },
+                              onRemoveFromCart: cartQuantity > 0
+                                  ? () {
+                                      _updateCart(context, product.id, 'minus');
+                                    }
+                                  : null,
+                              onIncreaseQuantity: cartQuantity > 0
+                                  ? () {
+                                      _updateCart(context, product.id, 'plus');
+                                    }
+                                  : null,
                             );
                           },
                         );
@@ -228,38 +202,39 @@ class _ProductsSectionState extends State<ProductsSection> {
               padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    height: 160.h,
+                    height: 150.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 10.h),
                   Container(
                     width: 160.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Container(
-                    width: 120.w,
                     height: 14.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 6.h),
+                  Container(
+                    width: 120.w,
+                    height: 12.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       Container(
                         width: 80.w,
-                        height: 18.h,
+                        height: 16.h,
                         decoration: BoxDecoration(
                           color: AppColors.textFieldBorderColor,
                           borderRadius: BorderRadius.circular(8.r),
@@ -268,7 +243,7 @@ class _ProductsSectionState extends State<ProductsSection> {
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Container(
-                          height: 18.h,
+                          height: 16.h,
                           decoration: BoxDecoration(
                             color: AppColors.textFieldBorderColor,
                             borderRadius: BorderRadius.circular(8.r),
@@ -277,13 +252,13 @@ class _ProductsSectionState extends State<ProductsSection> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 10.h),
                   Row(
                     children: List.generate(
                       3,
                       (buttonIndex) => Expanded(
                         child: Container(
-                          height: 32.h,
+                          height: 28.h,
                           margin: EdgeInsets.only(
                             right: buttonIndex == 2 ? 0 : 8.w,
                           ),

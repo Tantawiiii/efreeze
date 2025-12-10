@@ -13,6 +13,9 @@ import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
 import 'core/services/storage_service.dart';
 
+// Global navigator key for showing dialogs from anywhere
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -70,6 +73,7 @@ class MyApp extends StatelessWidget {
                   systemNavigationBarIconBrightness: Brightness.dark,
                 ),
                 child: MaterialApp(
+                  navigatorKey: navigatorKey,
                   title: 'EFreeze',
                   debugShowCheckedModeBanner: false,
                   locale: locale,

@@ -158,6 +158,9 @@ final class AppTexts {
   static String get returnIn15Days => _text('returnIn15Days');
   static String get freeDelivery => _text('freeDelivery');
   static String get oneYearWarranty => _text('oneYearWarranty');
+  static String get sessionExpired => _text('sessionExpired');
+  static String get pleaseLoginAgain => _text('pleaseLoginAgain');
+  static String get sessionExpiredMessage => _text('sessionExpiredMessage');
   static String get description => _text('description');
   static String get productDetails => _text('productDetails');
   static String get type => _text('type');
@@ -581,6 +584,18 @@ final class AppTexts {
     'oneYearWarranty': {
       AppLanguage.en: '1-year warranty',
       AppLanguage.ar: 'ضمان لمدة عام',
+    },
+    'sessionExpired': {
+      AppLanguage.en: 'Session Expired',
+      AppLanguage.ar: 'انتهت الجلسة',
+    },
+    'pleaseLoginAgain': {
+      AppLanguage.en: 'Please login again',
+      AppLanguage.ar: 'يرجى تسجيل الدخول مرة أخرى',
+    },
+    'sessionExpiredMessage': {
+      AppLanguage.en: 'Your session has expired. Please login again to continue.',
+      AppLanguage.ar: 'انتهت جلستك. يرجى تسجيل الدخول مرة أخرى للمتابعة.',
     },
   };
 }
