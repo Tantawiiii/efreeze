@@ -5,7 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
+import '../../../core/di/inject.dart' as di;
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/search_cubit.dart';
+import '../../favorites/cubit/favorites_cubit.dart';
 import '../widgets/product_grid_card.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -25,6 +29,8 @@ class _SearchScreenState extends State<SearchScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<SearchCubit>().loadInitialProducts();
+      // Load favorites if not already loaded
+      di.sl<FavoritesCubit>().getFavorites();
     });
   }
 
@@ -45,111 +51,123 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<LanguageCubit>();
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        title: Text(AppTexts.search),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              onChanged: _onChanged,
-              decoration: InputDecoration(
-                hintText: AppTexts.searchProductsHint,
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 14.w,
-                  vertical: 12.h,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: AppColors.textFieldBorderColor,
+    return BlocProvider.value(
+      value: di.sl<FavoritesCubit>(),
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: AppBar(
+          title: Text(AppTexts.search),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              TextField(
+                controller: _controller,
+                onChanged: _onChanged,
+                decoration: InputDecoration(
+                  hintText: AppTexts.searchProductsHint,
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 12.h,
                   ),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: AppColors.primaryColor,
-                    width: 1.4,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColors.textFieldBorderColor,
+                    ),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  borderRadius: BorderRadius.circular(10.r),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: AppColors.primaryColor,
+                      width: 1.4,
+                    ),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: BlocBuilder<SearchCubit, SearchState>(
-                builder: (context, state) {
-                  if (state is SearchInitial) {
-                    return Center(
-                      child: Text(
-                        AppTexts.startTypingToSearchProducts,
-                        style: TextStyle(
-                          color: AppColors.greyTextColor,
-                          fontSize: 14.sp,
+              SizedBox(height: 16.h),
+              Expanded(
+                child: BlocBuilder<SearchCubit, SearchState>(
+                  builder: (context, state) {
+                    if (state is SearchInitial) {
+                      return Center(
+                        child: Text(
+                          AppTexts.startTypingToSearchProducts,
+                          style: TextStyle(
+                            color: AppColors.greyTextColor,
+                            fontSize: 14.sp,
+                          ),
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    }
 
-                  if (state is SearchLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
-                      ),
-                    );
-                  }
+                    if (state is SearchLoading) {
+                      return AnimatedGridView.builder(
+                        padding: EdgeInsets.all(14.w),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 6.w,
+                        mainAxisSpacing: 12.h,
+                        childAspectRatio: 0.6,
+                        itemCount: 6,
+                        itemBuilder: (context, index) {
+                          return ProductGridCardShimmer();
+                        },
+                      );
+                    }
 
-                  if (state is SearchFailure) {
-                    return Center(
-                      child: Text(
-                        state.message,
-                        style: TextStyle(
-                          color: AppColors.greyTextColor,
-                          fontSize: 14.sp,
+                    if (state is SearchFailure) {
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: TextStyle(
+                            color: AppColors.greyTextColor,
+                            fontSize: 14.sp,
+                          ),
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    }
 
-                  final products = (state as SearchSuccess).response.data;
+                    final products = (state as SearchSuccess).response.data;
 
-                  if (products.isEmpty) {
-                    return Center(
-                      child: Text(
-                        AppTexts.noResultsFound,
-                        style: TextStyle(
-                          color: AppColors.greyTextColor,
-                          fontSize: 14.sp,
+                    if (products.isEmpty) {
+                      return Center(
+                        child: Text(
+                          AppTexts.noResultsFound,
+                          style: TextStyle(
+                            color: AppColors.greyTextColor,
+                            fontSize: 14.sp,
+                          ),
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    }
 
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    return AnimatedGridView.builder(
                       crossAxisCount: 2,
                       crossAxisSpacing: 6.w,
-                      mainAxisSpacing: 14.h,
-                      childAspectRatio: 0.6,
-                    ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return ProductGridCard(product: product);
-                    },
-                  );
-                },
+                      mainAxisSpacing: 4.h,
+                      childAspectRatio: 0.58,
+                      padding: EdgeInsets.all(12.w),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return ProductGridCard(
+                          product: product,
+                          isFavorite: false,
+                          onFavoriteTap: null,
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

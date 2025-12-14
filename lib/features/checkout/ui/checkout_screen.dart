@@ -5,6 +5,7 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
+import '../../../core/services/storage_service.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../cubit/order_cubit.dart';
@@ -32,6 +33,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _promoCodeController = TextEditingController();
   String _paymentMethod = 'card';
   String _paymentType = 'cash';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    final storageService = di.sl<StorageService>();
+    final user = storageService.getUser();
+    if (user != null) {
+      _emailController.text = user.email;
+      _phoneController.text = user.phone;
+    }
+  }
 
   @override
   void dispose() {

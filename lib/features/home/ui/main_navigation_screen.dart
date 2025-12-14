@@ -21,19 +21,15 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 2;
-  final ValueNotifier<int> _homeRefreshNotifier = ValueNotifier<int>(0);
-
-  @override
-  void dispose() {
-    _homeRefreshNotifier.dispose();
-    super.dispose();
-  }
 
   void _onNavItemTapped(BuildContext context, int index) {
     setState(() {
       _selectedIndex = index;
     });
 
+    // Removed auto-refresh for home tab - it uses cached data
+    // Users can pull-to-refresh to get fresh data
+    // Cart and Favorites tabs still refresh since they use factory cubits
     if (index == 1) {
       // Refresh cart when cart tab is selected
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,16 +38,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
       });
     } else if (index == 0) {
-      // Refresh favorites when favorites tab is selected
+      // Refresh favorites when favorites tab is selected (force refresh)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.read<FavoritesCubit>().getFavorites();
-        }
-      });
-    } else if (index == 2) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _homeRefreshNotifier.value++;
+          context.read<FavoritesCubit>().getFavorites(forceRefresh: true);
         }
       });
     }
@@ -61,15 +51,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => di.sl<CartCubit>()..getCart(),
-        ),
-        BlocProvider(
-          create: (context) => di.sl<FavoritesCubit>()..getFavorites(),
-        ),
-        BlocProvider(
-          create: (context) => di.sl<SearchCubit>(),
-        ),
+        BlocProvider(create: (context) => di.sl<CartCubit>()),
+        // Use BlocProvider.value for singleton cubits to prevent auto-closing
+        BlocProvider.value(value: di.sl<FavoritesCubit>()),
+        BlocProvider(create: (context) => di.sl<SearchCubit>()),
       ],
       child: Builder(
         builder: (builderContext) {
@@ -86,10 +71,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             backgroundColor: AppColors.white,
             extendBody: true,
             resizeToAvoidBottomInset: true,
-            body: IndexedStack(
-              index: _selectedIndex,
-              children: screens,
-            ),
+            body: IndexedStack(index: _selectedIndex, children: screens),
             bottomNavigationBar: CustomBottomNavBar(
               selectedIndex: _selectedIndex,
               onTap: (index) => _onNavItemTapped(builderContext, index),
@@ -101,10 +83,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildHomeScreen() {
-    return HomeScreen(
-      key: const ValueKey('home_screen'),
-      refreshTrigger: _homeRefreshNotifier,
-    );
+    return const HomeScreen(key: ValueKey('home_screen'));
   }
 
   Widget _buildCartScreen() {
@@ -123,4 +102,3 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return const SettingsScreen(key: ValueKey('settings_screen'));
   }
 }
-

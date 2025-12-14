@@ -7,6 +7,8 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/localization/language_cubit.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/routing/app_routes.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/cart_cubit.dart';
 import '../../home/services/products_service.dart';
 import '../models/cart_item_model.dart';
@@ -27,11 +29,7 @@ class _CartScreenState extends State<CartScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<CartCubit>().getCart();
-      }
-    });
+    // Load cart data only if not already loaded (via BlocListener below)
   }
 
   @override
@@ -43,9 +41,7 @@ class _CartScreenState extends State<CartScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && mounted) {
-      context.read<CartCubit>().getCart();
-    }
+    // Removed auto-refresh on app resume - use pull-to-refresh instead
   }
 
   @override
@@ -59,169 +55,183 @@ class _CartScreenState extends State<CartScreen>
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        title:  Text(AppTexts.cart),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      body: BlocBuilder<CartCubit, CartState>(
-        builder: (context, state) {
-          if (state is CartInitial || state is CartLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryColor),
-            );
-          }
-
-          if (state is CartFailure) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red, size: 48.sp),
-                  SizedBox(height: 16.h),
-                  Text(
-                    state.message,
-                    style: TextStyle(
-                      color: AppColors.greyTextColor,
-                      fontSize: 14.sp,
-                    ),
-                    textAlign: TextAlign.center,
+        backgroundColor: AppColors.white,
+        appBar: AppBar(
+          title: Text(AppTexts.cart),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+        ),
+        body: BlocBuilder<CartCubit, CartState>(
+          builder: (context, state) {
+            if (state is CartInitial || state is CartLoading) {
+              return ListView(
+                padding: EdgeInsets.all(20.w),
+                children: List.generate(
+                  3,
+                  (index) => Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: ListItemShimmer(),
                   ),
-                  SizedBox(height: 16.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<CartCubit>().getCart();
-                    },
-                    child: Text(AppTexts.retry),
-                  ),
-                ],
-              ),
-            );
-          }
+                ),
+              );
+            }
 
-          if (state is CartSuccess) {
-            final cartItems = state.response.data;
-
-            if (cartItems.isEmpty) {
+            if (state is CartFailure) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.shopping_cart_outlined,
-                      color: AppColors.greyTextColor,
-                      size: 80.sp,
-                    ),
+                    Icon(Icons.error_outline, color: Colors.red, size: 48.sp),
                     SizedBox(height: 16.h),
                     Text(
-                      AppTexts.cartEmpty,
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      AppTexts.addItemsToCart,
+                      state.message,
                       style: TextStyle(
                         color: AppColors.greyTextColor,
                         fontSize: 14.sp,
                       ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.h),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<CartCubit>().getCart();
+                      },
+                      child: Text(AppTexts.retry),
                     ),
                   ],
                 ),
               );
             }
 
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(20.w),
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
-                      final cartItem = cartItems[index];
-                      return _buildCartItem(cartItem);
-                    },
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
+            if (state is CartSuccess) {
+              final cartItems = state.response.data;
+
+              if (cartItems.isEmpty) {
+                return Center(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                             AppTexts.total,
-                            style: TextStyle(
-                              color: AppColors.blackTextColor,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            _calculateTotal(cartItems),
-                            style: TextStyle(
-                              color: AppColors.primaryColor,
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        color: AppColors.greyTextColor,
+                        size: 80.sp,
                       ),
                       SizedBox(height: 16.h),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.checkout,
-                              arguments: cartItems,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                          ),
-                          child: Text(
-                            AppTexts.checkout,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                      Text(
+                        AppTexts.cartEmpty,
+                        style: TextStyle(
+                          color: AppColors.greyTextColor,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        AppTexts.addItemsToCart,
+                        style: TextStyle(
+                          color: AppColors.greyTextColor,
+                          fontSize: 14.sp,
                         ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(height: 100.h),
-              ],
-            );
-          }
+                );
+              }
 
-          return const SizedBox.shrink();
-        },
-      ),
+              return Column(
+                children: [
+                  Expanded(
+                    child: RefreshIndicator(
+                      color: AppColors.primaryColor,
+                      onRefresh: () async {
+                        await context.read<CartCubit>().getCart();
+                      },
+                      child: AnimatedListView.builder(
+                        padding: EdgeInsets.all(20.w),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: cartItems.length,
+                        itemBuilder: (context, index) {
+                          final cartItem = cartItems[index];
+                          return _buildCartItem(cartItem);
+                        },
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              AppTexts.total,
+                              style: TextStyle(
+                                color: AppColors.blackTextColor,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              _calculateTotal(cartItems),
+                              style: TextStyle(
+                                color: AppColors.primaryColor,
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.checkout,
+                                arguments: cartItems,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                            ),
+                            child: Text(
+                              AppTexts.checkout,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 100.h),
+                ],
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

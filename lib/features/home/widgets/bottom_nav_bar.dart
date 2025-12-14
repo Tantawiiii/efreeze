@@ -23,7 +23,7 @@ class CustomBottomNavBar extends StatelessWidget {
       backgroundColor: Colors.transparent,
       color: AppColors.primaryColor,
       buttonBackgroundColor: AppColors.primaryColor,
-      height: 70.h,
+      height: 68.h,
       animationDuration: const Duration(milliseconds: 300),
       items: [
         Icon(Icons.favorite_border, color: Colors.white, size: 24.r),

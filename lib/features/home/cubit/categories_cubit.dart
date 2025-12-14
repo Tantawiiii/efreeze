@@ -11,12 +11,21 @@ class CategoriesCubit extends Cubit<CategoriesState> {
   CategoriesCubit(this._categoriesService) : super(CategoriesInitial());
 
   /// Fetch all categories
-  Future<void> getCategories() async {
+  Future<void> getCategories({bool forceRefresh = false}) async {
+    // Don't reload if we already have data unless force refresh
+    if (!forceRefresh && state is CategoriesSuccess) {
+      return;
+    }
+
+    // Check if cubit is closed before emitting
+    if (isClosed) return;
+
     emit(CategoriesLoading());
 
     try {
       final response = await _categoriesService.getCategories();
 
+      if (isClosed) return;
       emit(CategoriesSuccess(response));
     } catch (e) {
       String errorMessage = 'An error occurred. Please try again.';
@@ -41,13 +50,14 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         }
       }
 
+      if (isClosed) return;
       emit(CategoriesFailure(errorMessage));
     }
   }
 
   /// Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(CategoriesInitial());
   }
 }
-

@@ -5,6 +5,7 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../core/localization/language_cubit.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../cubit/order_details_cubit.dart';
 import '../models/order_card_item_model.dart';
 import '../models/order_details_model.dart';
@@ -32,7 +33,42 @@ class OrderDetailsScreen extends StatelessWidget {
             body: Builder(
               builder: (context) {
                 if (state is OrderDetailsLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.all(20.w),
+                    child: Column(
+                      children: [
+                        ShimmerLoading(
+                          child: Container(
+                            height: 200.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.textFieldBorderColor,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        ShimmerLoading(
+                          child: Container(
+                            height: 150.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.textFieldBorderColor,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        ShimmerLoading(
+                          child: Container(
+                            height: 150.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.textFieldBorderColor,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 if (state is OrderDetailsFailure) {
@@ -393,10 +429,15 @@ class OrderDetailsScreen extends StatelessWidget {
         if (isProcessing) ...[
           SizedBox(height: 16.h),
           Center(
-            child: SizedBox(
-              width: 24.w,
-              height: 24.w,
-              child: const CircularProgressIndicator(),
+            child: ShimmerLoading(
+              child: Container(
+                width: 24.w,
+                height: 24.w,
+                decoration: BoxDecoration(
+                  color: AppColors.textFieldBorderColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
           ),
         ],

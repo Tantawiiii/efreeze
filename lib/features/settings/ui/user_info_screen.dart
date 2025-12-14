@@ -7,6 +7,7 @@ import '../../../core/di/inject.dart' as di;
 import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../auth/models/user_model.dart';
 import '../cubit/user_info_cubit.dart';
 
@@ -20,14 +21,55 @@ class UserInfoScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
-          title:  Text(AppTexts.myAccount),
+          title: Text(AppTexts.myAccount),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
         body: BlocBuilder<UserInfoCubit, UserInfoState>(
           builder: (context, state) {
             if (state is UserInfoLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return SingleChildScrollView(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  children: [
+                    ShimmerLoading(
+                      child: Container(
+                        height: 200.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textFieldBorderColor,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 32.h),
+                    ShimmerLoading(
+                      child: Container(
+                        height: 24.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textFieldBorderColor,
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    ...List.generate(
+                      3,
+                      (index) => Padding(
+                        padding: EdgeInsets.only(bottom: 12.h),
+                        child: ShimmerLoading(
+                          child: Container(
+                            height: 100.h,
+                            decoration: BoxDecoration(
+                              color: AppColors.textFieldBorderColor,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
 
             if (state is UserInfoFailure) {
@@ -35,11 +77,7 @@ class UserInfoScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64.sp,
-                      color: Colors.red,
-                    ),
+                    Icon(Icons.error_outline, size: 64.sp, color: Colors.red),
                     SizedBox(height: 16.h),
                     Text(
                       state.message,
@@ -62,19 +100,26 @@ class UserInfoScreen extends StatelessWidget {
             }
 
             if (state is UserInfoSuccess) {
-              return SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // User Info Section
-                    _buildUserInfoSection(state.user),
-                    SizedBox(height: 32.h),
-                    // Orders Section
-                    _buildOrdersSection(context, state.orders),
-                    SizedBox(height: 32.h),
-                    _buildDeleteAccountSection(context),
-                  ],
+              return RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  await context.read<UserInfoCubit>().checkAuth();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // User Info Section
+                      _buildUserInfoSection(state.user),
+                      SizedBox(height: 32.h),
+                      // Orders Section
+                      _buildOrdersSection(context, state.orders),
+                      SizedBox(height: 32.h),
+                      _buildDeleteAccountSection(context),
+                    ],
+                  ),
                 ),
               );
             }
@@ -97,7 +142,6 @@ class UserInfoScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-
           CircleAvatar(
             radius: 50.r,
             backgroundColor: AppColors.textFieldBorderColor,
@@ -220,17 +264,25 @@ class UserInfoScreen extends StatelessWidget {
     String? orderTotal;
 
     if (order is Map) {
-      orderId = order['id']?.toString() ?? order['orderId']?.toString() ?? 'N/A';
-      orderNumber = order['order_number']?.toString() ?? 
-                   order['orderNumber']?.toString() ?? 
-                   orderId;
-      orderStatus = order['status']?.toString() ?? order['orderStatus']?.toString() ?? 'Unknown';
-      orderDate = order['createdAt']?.toString() ?? 
-                  order['date']?.toString() ?? 
-                  order['created_at']?.toString() ?? '';
-      orderTotal = order['total']?.toString() ?? 
-                   order['amount']?.toString() ?? 
-                   order['price']?.toString();
+      orderId =
+          order['id']?.toString() ?? order['orderId']?.toString() ?? 'N/A';
+      orderNumber =
+          order['order_number']?.toString() ??
+          order['orderNumber']?.toString() ??
+          orderId;
+      orderStatus =
+          order['status']?.toString() ??
+          order['orderStatus']?.toString() ??
+          'Unknown';
+      orderDate =
+          order['createdAt']?.toString() ??
+          order['date']?.toString() ??
+          order['created_at']?.toString() ??
+          '';
+      orderTotal =
+          order['total']?.toString() ??
+          order['amount']?.toString() ??
+          order['price']?.toString();
     } else {
       orderId = order.toString();
       orderNumber = orderId;
@@ -259,82 +311,87 @@ class UserInfoScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: AppColors.textFieldBorderColor),
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Order #$orderId',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blackTextColor,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(orderStatus).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  orderStatus,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: _getStatusColor(orderStatus),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (orderDate.isNotEmpty) ...[
-            SizedBox(height: 8.h),
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 14.sp,
-                  color: AppColors.greyTextColor,
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  orderDate.length > 20 ? orderDate.substring(0, 20) : orderDate,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.greyTextColor,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          if (orderTotal != null) ...[
-            SizedBox(height: 8.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total:',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.greyTextColor,
-                  ),
-                ),
-                Text(
-                  orderTotal,
+                  'Order #$orderId',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryColor,
+                    color: AppColors.blackTextColor,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(orderStatus).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    orderStatus,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: _getStatusColor(orderStatus),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
+            if (orderDate.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    size: 14.sp,
+                    color: AppColors.greyTextColor,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    orderDate.length > 20
+                        ? orderDate.substring(0, 20)
+                        : orderDate,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppColors.greyTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (orderTotal != null) ...[
+              SizedBox(height: 8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total:',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.greyTextColor,
+                    ),
+                  ),
+                  Text(
+                    orderTotal,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -373,10 +430,7 @@ class UserInfoScreen extends StatelessWidget {
           onPressed: () => _confirmDeleteAccount(context),
           child: Text(
             AppTexts.deleteAccount,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -433,12 +487,8 @@ class UserInfoScreen extends StatelessWidget {
       );
     } else {
       messenger.showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(result), backgroundColor: Colors.red),
       );
     }
   }
 }
-

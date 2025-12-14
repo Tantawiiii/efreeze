@@ -3,17 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
+import '../../../shared/widgets/favorite_button.dart';
 import '../models/product_model.dart';
 
 class ProductGridCard extends StatelessWidget {
   final ProductModel product;
-  final bool isFavorite;
+  final bool isFavorite; // Kept for backward compatibility, but not used
   final VoidCallback? onFavoriteTap;
 
   const ProductGridCard({
     super.key,
     required this.product,
-    this.isFavorite = false,
+    this.isFavorite = false, // Not used anymore, FavoriteButton handles it
     this.onFavoriteTap,
   });
 
@@ -39,7 +40,7 @@ class ProductGridCard extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 140.h,
+                  height: 138.h,
                   decoration: BoxDecoration(
                     color: AppColors.overlayColor,
                     borderRadius: BorderRadius.vertical(
@@ -73,74 +74,49 @@ class ProductGridCard extends StatelessWidget {
                           size: 40.sp,
                         ),
                 ),
-                if (onFavoriteTap != null)
-                  Positioned(
-                    top: 8.h,
-                    right: 8.w,
-                    child: GestureDetector(
-                      onTap: onFavoriteTap,
-                      child: Container(
-                        padding: EdgeInsets.all(6.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite
-                              ? Colors.red
-                              : AppColors.greyTextColor,
-                          size: 20.sp,
-                        ),
-                      ),
-                    ),
+                Positioned(
+                  top: 8.h,
+                  right: 8.w,
+                  child: FavoriteButton(
+                    productId: product.id,
+                    onTap: onFavoriteTap,
                   ),
+                ),
               ],
             ),
-            Expanded(
+            Flexible(
               child: Padding(
-                padding: EdgeInsets.all(8.w),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.name,
-                          style: TextStyle(
-                            color: AppColors.blackTextColor,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                    Flexible(
+                      child: Text(
+                        product.name,
+                        style: TextStyle(
+                          color: AppColors.blackTextColor,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          product.shortDescription,
-                          style: TextStyle(
-                            color: AppColors.greyTextColor,
-                            fontSize: 11.sp,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Wrap(
-                          spacing: 8.w,
-                          runSpacing: 4.h,
+                          spacing: 6.w,
+                          runSpacing: 3.h,
                           children: [
                             Text(
                               '${product.price} ${product.currency}',
                               style: TextStyle(
                                 color: AppColors.primaryColor,
-                                fontSize: 16.sp,
+                                fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -148,7 +124,7 @@ class ProductGridCard extends StatelessWidget {
                               product.oldPrice,
                               style: TextStyle(
                                 color: AppColors.greyTextColor,
-                                fontSize: 12.sp,
+                                fontSize: 11.sp,
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),
@@ -156,14 +132,15 @@ class ProductGridCard extends StatelessWidget {
                               '${product.discount}% Off',
                               style: TextStyle(
                                 color: Colors.red,
-                                fontSize: 11.sp,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             ...List.generate(5, (index) {
                               return Icon(
@@ -171,15 +148,18 @@ class ProductGridCard extends StatelessWidget {
                                     ? Icons.star
                                     : Icons.star_border,
                                 color: Colors.amber,
-                                size: 14.sp,
+                                size: 12.sp,
                               );
                             }),
-                            SizedBox(width: 4.w),
-                            Text(
-                              product.reviewsCount.toString(),
-                              style: TextStyle(
-                                color: AppColors.greyTextColor,
-                                fontSize: 11.sp,
+                            SizedBox(width: 3.w),
+                            Flexible(
+                              child: Text(
+                                product.reviewsCount.toString(),
+                                style: TextStyle(
+                                  color: AppColors.greyTextColor,
+                                  fontSize: 10.sp,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

@@ -11,12 +11,21 @@ class OffersCubit extends Cubit<OffersState> {
   OffersCubit(this._productsService) : super(OffersInitial());
 
   /// Get all offers
-  Future<void> getOffers() async {
+  Future<void> getOffers({bool forceRefresh = false}) async {
+    // Don't reload if we already have data unless force refresh
+    if (!forceRefresh && state is OffersSuccess) {
+      return;
+    }
+
+    // Check if cubit is closed before emitting
+    if (isClosed) return;
+
     emit(OffersLoading());
 
     try {
       final response = await _productsService.getOffers();
 
+      if (isClosed) return;
       emit(OffersSuccess(response));
     } catch (e) {
       String errorMessage = 'An error occurred. Please try again.';
@@ -41,13 +50,14 @@ class OffersCubit extends Cubit<OffersState> {
         }
       }
 
+      if (isClosed) return;
       emit(OffersFailure(errorMessage));
     }
   }
 
   /// Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(OffersInitial());
   }
 }
-

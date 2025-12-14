@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/di/inject.dart' as di;
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/products_cubit.dart';
 import '../../favorites/cubit/favorites_cubit.dart';
 import '../widgets/product_grid_card.dart';
@@ -59,10 +61,16 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
         body: BlocBuilder<ProductsCubit, ProductsState>(
           builder: (context, state) {
             if (state is ProductsLoading) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primaryColor,
-                ),
+              return AnimatedGridView.builder(
+                padding: EdgeInsets.all(20.w),
+                crossAxisCount: 2,
+                crossAxisSpacing: 6.w,
+                mainAxisSpacing: 14.h,
+                childAspectRatio: 0.6,
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return ProductGridCardShimmer();
+                },
               );
             }
 
@@ -124,38 +132,32 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 );
               }
 
-              return GridView.builder(
-                padding: EdgeInsets.all(20.w),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              return RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  if (widget.isBestProducts) {
+                    await context.read<ProductsCubit>().getBestProducts();
+                  } else {
+                    await context.read<ProductsCubit>().getAllProducts();
+                  }
+                },
+                child: AnimatedGridView.builder(
+                  padding: EdgeInsets.all(20.w),
                   crossAxisCount: 2,
                   crossAxisSpacing: 6.w,
                   mainAxisSpacing: 14.h,
                   childAspectRatio: 0.6,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductGridCard(
+                      product: product,
+                      isFavorite: false,
+                      onFavoriteTap: null,
+                    );
+                  },
                 ),
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return BlocBuilder<FavoritesCubit, FavoritesState>(
-                    builder: (context, favoritesState) {
-                      bool isFavorite = false;
-                      if (favoritesState is FavoritesSuccess) {
-                        isFavorite = favoritesState.response.data
-                            .any((fav) => fav.card.id == product.id);
-                      }
-
-                      return ProductGridCard(
-                        product: product,
-                        isFavorite: isFavorite,
-                        onFavoriteTap: () {
-                          context.read<FavoritesCubit>().toggleFavorite(
-                                cardId: product.id,
-                                method: isFavorite ? 'delete' : 'add',
-                              );
-                        },
-                      );
-                    },
-                  );
-                },
               );
             }
 
@@ -166,4 +168,3 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
     );
   }
 }
-

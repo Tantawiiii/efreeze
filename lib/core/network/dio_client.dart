@@ -1,7 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'api_constants.dart';
+import '../../../main.dart';
+import '../constant/app_texts.dart';
+import '../routing/app_routes.dart';
 import '../services/storage_service.dart';
+import 'api_constants.dart';
 
 class DioClient {
   DioClient({required StorageService storageService})
@@ -27,6 +31,7 @@ class DioClient {
 
   late final Dio _dio;
   final StorageService _storageService;
+  bool _isShowingTokenExpiredDialog = false;
 
   void _setupInterceptors() {
     _dio.interceptors.add(
@@ -36,6 +41,14 @@ class DioClient {
           options.headers['lang'] = languageCode;
           _dio.options.headers['lang'] = languageCode;
           return handler.next(options);
+        },
+        onError: (error, handler) {
+          // Handle 401 Unauthorized errors (token expired)
+          if (error.response?.statusCode == 401) {
+            _handleTokenExpiration();
+            return handler.next(error);
+          }
+          return handler.next(error);
         },
       ),
     );
@@ -51,6 +64,55 @@ class DioClient {
         maxWidth: 90,
       ),
     );
+  }
+
+  void _handleTokenExpiration() {
+    // Prevent multiple dialogs from showing
+    if (_isShowingTokenExpiredDialog) {
+      return;
+    }
+
+    // Clear token and user data
+    _storageService.clearAuthData();
+    clearAuthToken();
+
+    // Show alert dialog
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      _isShowingTokenExpiredDialog = true;
+      // Use post frame callback to ensure context is valid
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentContext = navigatorKey.currentContext;
+        if (currentContext != null) {
+          showDialog(
+            context: currentContext,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              title: Text(AppTexts.sessionExpired),
+              content: Text(AppTexts.sessionExpiredMessage),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    _isShowingTokenExpiredDialog = false;
+                    Navigator.of(currentContext).pushNamedAndRemoveUntil(
+                      AppRoutes.login,
+                      (route) => false,
+                    );
+                  },
+                  child: Text(AppTexts.login),
+                ),
+              ],
+            ),
+          ).then((_) {
+            // Reset flag when dialog is dismissed
+            _isShowingTokenExpiredDialog = false;
+          });
+        } else {
+          _isShowingTokenExpiredDialog = false;
+        }
+      });
+    }
   }
 
   /// Get Dio instance

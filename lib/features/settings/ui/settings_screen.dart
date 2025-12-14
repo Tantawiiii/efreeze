@@ -8,6 +8,7 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../shared/widgets/language_switcher.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../../auth/services/auth_service.dart';
 import '../cubit/update_profile_cubit.dart';
 import '../../contact_us/cubit/contact_us_cubit.dart';
@@ -107,40 +108,59 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: ListView(
+      body: AnimatedListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.language_outlined),
-            title: Text(AppTexts.language),
-            subtitle: Text(AppTexts.changeLanguage),
-            trailing: const LanguageSwitcher(),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: Text(AppTexts.updateProfile),
-            subtitle: Text(AppTexts.editYourInfo),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _openUpdateProfile(context),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.support_agent_outlined),
-            title: Text(AppTexts.contactUs),
-            subtitle: Text(AppTexts.sendUsMessage),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _openContactUs(context),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: Text(AppTexts.logout),
-            subtitle: Text(AppTexts.signOutReturn),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () => _logout(context),
-          ),
-        ],
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return ListTile(
+              leading: const Icon(Icons.account_circle_outlined),
+              title: Text(AppTexts.myAccount),
+              subtitle: Text(AppTexts.orders),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => Navigator.pushNamed(context, AppRoutes.userInfo),
+            );
+          } else if (index == 1) {
+            return const Divider(height: 1);
+          } else if (index == 2) {
+            return ListTile(
+              leading: const Icon(Icons.language_outlined),
+              title: Text(AppTexts.language),
+              subtitle: Text(AppTexts.changeLanguage),
+              trailing: const LanguageSwitcher(),
+            );
+          } else if (index == 3) {
+            return Column(
+              children: [
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: Text(AppTexts.updateProfile),
+                  subtitle: Text(AppTexts.editYourInfo),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => _openUpdateProfile(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.support_agent_outlined),
+                  title: Text(AppTexts.contactUs),
+                  subtitle: Text(AppTexts.sendUsMessage),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => _openContactUs(context),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: Text(AppTexts.logout),
+                  subtitle: Text(AppTexts.signOutReturn),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => _logout(context),
+                ),
+              ],
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }

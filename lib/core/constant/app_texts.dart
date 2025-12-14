@@ -158,6 +158,9 @@ final class AppTexts {
   static String get returnIn15Days => _text('returnIn15Days');
   static String get freeDelivery => _text('freeDelivery');
   static String get oneYearWarranty => _text('oneYearWarranty');
+  static String get sessionExpired => _text('sessionExpired');
+  static String get pleaseLoginAgain => _text('pleaseLoginAgain');
+  static String get sessionExpiredMessage => _text('sessionExpiredMessage');
   static String get description => _text('description');
   static String get productDetails => _text('productDetails');
   static String get type => _text('type');
@@ -172,6 +175,14 @@ final class AppTexts {
   static String get anonymous => _text('anonymous');
   static String get failedToUpdateCart => _text('failedToUpdateCart');
   static String get off => _text('off');
+  static String get passwordsDoNotMatch => _text('passwordsDoNotMatch');
+  static String get accountCreatedSuccessfully =>
+      _text('accountCreatedSuccessfully');
+  static String get pleaseEnterName => _text('pleaseEnterName');
+  static String get passwordMustBeAtLeast6Characters =>
+      _text('passwordMustBeAtLeast6Characters');
+  static String get pleaseConfirmPassword => _text('pleaseConfirmPassword');
+  static String get creating => _text('creating');
 
   static const Map<String, Map<AppLanguage, String>> _localizedValues = {
     'welcomeBack': {
@@ -243,8 +254,10 @@ final class AppTexts {
       AppLanguage.ar: 'جميع قطع الغيار الإلكترونية\nفي مكان واحد',
     },
     'onDesTitle1': {
-      AppLanguage.en: 'Discover a wide range of original electronic spare parts, all at your fingertips.',
-      AppLanguage.ar: 'اكتشف مجموعة واسعة من قطع الغيار الأصلية للأجهزة الإلكترونية، جميعها بين يديك.',
+      AppLanguage.en:
+          'Discover a wide range of original electronic spare parts, all at your fingertips.',
+      AppLanguage.ar:
+          'اكتشف مجموعة واسعة من قطع الغيار الأصلية للأجهزة الإلكترونية، جميعها بين يديك.',
     },
     'onTitle2': {
       AppLanguage.en: 'Search & Order Instantly',
@@ -261,7 +274,8 @@ final class AppTexts {
       AppLanguage.ar: 'توصيل سريع وآمن',
     },
     'onDesTitle3': {
-      AppLanguage.en: 'Get your orders delivered quickly and safely right to your doorstep.',
+      AppLanguage.en:
+          'Get your orders delivered quickly and safely right to your doorstep.',
       AppLanguage.ar: 'استلم طلباتك بسرعة وأمان حتى باب منزلك.',
     },
     'skip': {AppLanguage.en: 'Skip', AppLanguage.ar: 'تخطي'},
@@ -455,7 +469,10 @@ final class AppTexts {
     },
     'type': {AppLanguage.en: 'Type', AppLanguage.ar: 'النوع'},
     'color': {AppLanguage.en: 'Color', AppLanguage.ar: 'اللون'},
-    'quantityAvailable': {AppLanguage.en: 'Quantity Available', AppLanguage.ar: 'الكمية المتاحة',},
+    'quantityAvailable': {
+      AppLanguage.en: 'Quantity Available',
+      AppLanguage.ar: 'الكمية المتاحة',
+    },
     'inCart': {AppLanguage.en: 'In Cart', AppLanguage.ar: 'في السلة'},
     'addToCart': {
       AppLanguage.en: 'Add to Cart',
@@ -581,6 +598,43 @@ final class AppTexts {
     'oneYearWarranty': {
       AppLanguage.en: '1-year warranty',
       AppLanguage.ar: 'ضمان لمدة عام',
+    },
+    'sessionExpired': {
+      AppLanguage.en: 'Session Expired',
+      AppLanguage.ar: 'انتهت الجلسة',
+    },
+    'pleaseLoginAgain': {
+      AppLanguage.en: 'Please login again',
+      AppLanguage.ar: 'يرجى تسجيل الدخول مرة أخرى',
+    },
+    'sessionExpiredMessage': {
+      AppLanguage.en:
+          'Your session has expired. Please login again to continue.',
+      AppLanguage.ar: 'انتهت جلستك. يرجى تسجيل الدخول مرة أخرى للمتابعة.',
+    },
+    'passwordsDoNotMatch': {
+      AppLanguage.en: 'Passwords do not match',
+      AppLanguage.ar: 'كلمات المرور غير متطابقة',
+    },
+    'accountCreatedSuccessfully': {
+      AppLanguage.en: 'Account created successfully!',
+      AppLanguage.ar: 'تم إنشاء الحساب بنجاح!',
+    },
+    'pleaseEnterName': {
+      AppLanguage.en: 'Please enter your name',
+      AppLanguage.ar: 'يرجى إدخال اسمك',
+    },
+    'passwordMustBeAtLeast6Characters': {
+      AppLanguage.en: 'Password must be at least 6 characters',
+      AppLanguage.ar: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    },
+    'pleaseConfirmPassword': {
+      AppLanguage.en: 'Please confirm your password',
+      AppLanguage.ar: 'يرجى تأكيد كلمة المرور',
+    },
+    'creating': {
+      AppLanguage.en: 'Creating...',
+      AppLanguage.ar: 'جارٍ الإنشاء...',
     },
   };
 }

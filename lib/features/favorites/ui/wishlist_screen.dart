@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/favorites_cubit.dart';
 import '../../home/widgets/product_grid_card.dart';
 
@@ -23,12 +25,7 @@ class _WishlistScreenState extends State<WishlistScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Always refresh favorites on first frame when screen is created
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FavoritesCubit>().getFavorites();
-      }
-    });
+    // Load favorites only if not already loaded (via BlocListener below)
   }
 
   @override
@@ -40,21 +37,7 @@ class _WishlistScreenState extends State<WishlistScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // Refresh favorites when app comes to foreground
-    if (state == AppLifecycleState.resumed && mounted) {
-      context.read<FavoritesCubit>().getFavorites();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh favorites whenever dependencies change (e.g., when screen becomes active)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FavoritesCubit>().getFavorites();
-      }
-    });
+    // Removed auto-refresh on app resume - use pull-to-refresh instead
   }
 
   @override
@@ -93,8 +76,16 @@ class _WishlistScreenState extends State<WishlistScreen>
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {
             if (state is FavoritesLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryColor),
+              return AnimatedGridView.builder(
+                padding: EdgeInsets.all(20.w),
+                crossAxisCount: 2,
+                crossAxisSpacing: 6.w,
+                mainAxisSpacing: 14.h,
+                childAspectRatio: 0.6,
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return ProductGridCardShimmer();
+                },
               );
             }
 
@@ -160,29 +151,32 @@ class _WishlistScreenState extends State<WishlistScreen>
                 );
               }
 
-              return GridView.builder(
-                padding: EdgeInsets.all(20.w),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              return RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  await context.read<FavoritesCubit>().getFavorites(
+                    forceRefresh: true,
+                  );
+                },
+                child: AnimatedGridView.builder(
+                  padding: EdgeInsets.all(20.w),
                   crossAxisCount: 2,
                   crossAxisSpacing: 6.w,
                   mainAxisSpacing: 14.h,
                   childAspectRatio: 0.6,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: favorites.length,
+                  itemBuilder: (context, index) {
+                    final favoriteItem = favorites[index];
+                    final product = favoriteItem.card;
+                    return ProductGridCard(
+                      product: product,
+                      isFavorite: true, // Will be handled by FavoriteButton
+                      onFavoriteTap:
+                          null, // FavoriteButton will handle this internally
+                    );
+                  },
                 ),
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final favoriteItem = favorites[index];
-                  final product = favoriteItem.card;
-                  return ProductGridCard(
-                    product: product,
-                    isFavorite: true,
-                    onFavoriteTap: () {
-                      context.read<FavoritesCubit>().toggleFavorite(
-                        cardId: product.id,
-                        method: 'delete',
-                      );
-                    },
-                  );
-                },
               );
             }
 

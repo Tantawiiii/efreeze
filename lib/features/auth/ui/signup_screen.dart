@@ -48,8 +48,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
+        SnackBar(
+          content: Text(AppTexts.passwordsDoNotMatch),
           backgroundColor: Colors.red,
         ),
       );
@@ -115,8 +115,8 @@ class _SignupScreenState extends State<SignupScreen> {
         listener: (context, state) {
           if (state is SignupSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully!'),
+              SnackBar(
+                content: Text(AppTexts.accountCreatedSuccessfully),
                 backgroundColor: Colors.green,
               ),
             );
@@ -193,7 +193,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       leadingIcon: Icons.person_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return AppTexts.pleaseEnterName;
                         }
                         return null;
                       },
@@ -206,10 +206,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       leadingIcon: Icons.email_outlined,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return AppTexts.pleaseEnterEmail;
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                          return AppTexts.pleaseEnterValidEmail;
                         }
                         return null;
                       },
@@ -222,7 +222,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       leadingIcon: Icons.phone_outlined,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
+                          return AppTexts.pleaseEnterPhone;
                         }
                         return null;
                       },
@@ -236,10 +236,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       leadingIcon: Icons.lock_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
+                          return AppTexts.pleaseEnterPass;
                         }
                         if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                          return AppTexts.passwordMustBeAtLeast6Characters;
                         }
                         return null;
                       },
@@ -253,7 +253,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       leadingIcon: Icons.lock_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
+                          return AppTexts.pleaseConfirmPassword;
                         }
                         return null;
                       },
@@ -263,7 +263,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       builder: (context, state) {
                         final isLoading = state is SignupLoading;
                         return PrimaryButton(
-                          title: isLoading ? 'Creating...' : AppTexts.createAcc,
+                          title: isLoading
+                              ? AppTexts.creating
+                              : AppTexts.createAcc,
                           onPressed: isLoading
                               ? () {}
                               : () =>

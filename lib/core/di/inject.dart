@@ -72,14 +72,14 @@ Future<void> init() async {
     () => LoginCubit(sl<AuthService>(), sl<StorageService>(), sl<DioClient>()),
   );
 
-  // Categories Cubits
-  sl.registerFactory(() => CategoriesCubit(sl<CategoriesService>()));
+  // Categories Cubits (singletons for caching)
+  sl.registerLazySingleton(() => CategoriesCubit(sl<CategoriesService>()));
   sl.registerFactory(() => CategoryProductsCubit(sl<CategoriesService>()));
 
-  // Products Cubits
+  // Products Cubits (Offers is singleton for caching, Products stays factory for flexibility)
   sl.registerFactory(() => ProductDetailsCubit(sl<ProductsService>()));
   sl.registerFactory(() => ProductsCubit(sl<ProductsService>()));
-  sl.registerFactory(() => OffersCubit(sl<ProductsService>()));
+  sl.registerLazySingleton(() => OffersCubit(sl<ProductsService>()));
   sl.registerFactory(() => SearchCubit(sl<ProductsService>()));
 
   // Cart Cubit
@@ -88,8 +88,8 @@ Future<void> init() async {
   // Order Cubit
   sl.registerFactory(() => OrderCubit(sl<ProductsService>()));
 
-  // Favorites Cubit
-  sl.registerFactory(() => FavoritesCubit(sl<ProductsService>()));
+  // Favorites Cubit (singleton for caching)
+  sl.registerLazySingleton(() => FavoritesCubit(sl<ProductsService>()));
 
   // Review Cubit
   sl.registerFactory(() => ReviewCubit(sl<ProductsService>()));
