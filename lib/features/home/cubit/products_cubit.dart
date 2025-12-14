@@ -11,7 +11,12 @@ class ProductsCubit extends Cubit<ProductsState> {
   ProductsCubit(this._productsService) : super(ProductsInitial());
 
   /// Fetch all products
-  Future<void> getAllProducts() async {
+  Future<void> getAllProducts({bool forceRefresh = false}) async {
+    // Don't reload if we already have data unless force refresh
+    if (!forceRefresh && state is ProductsSuccess) {
+      return;
+    }
+
     emit(ProductsLoading());
 
     try {
@@ -46,7 +51,8 @@ class ProductsCubit extends Cubit<ProductsState> {
   }
 
   /// Fetch best products (most popular)
-  Future<void> getBestProducts() async {
+  Future<void> getBestProducts({bool forceRefresh = false}) async {
+    // Note: For best products, we always fetch fresh data since we track all products state
     emit(ProductsLoading());
 
     try {
@@ -85,4 +91,3 @@ class ProductsCubit extends Cubit<ProductsState> {
     emit(ProductsInitial());
   }
 }
-

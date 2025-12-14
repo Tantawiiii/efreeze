@@ -14,9 +14,7 @@ import '../widgets/offers_slider.dart';
 import '../widgets/products_section.dart';
 
 class HomeScreen extends StatefulWidget {
-  final ValueNotifier<int>? refreshTrigger;
-
-  const HomeScreen({super.key, this.refreshTrigger});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,33 +22,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _refreshSeed = 0;
-  bool _hasRefreshedProducts = false;
   BuildContext? _providersContext;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _attachRefreshListener();
+    // Load data only if not already loaded (cached)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _refreshHomeData();
+      if (mounted && _providersContext != null) {
+        _loadHomeDataIfNeeded();
       }
     });
   }
 
   @override
-  void didUpdateWidget(HomeScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.refreshTrigger != widget.refreshTrigger) {
-      _detachRefreshListener(oldWidget.refreshTrigger);
-      _attachRefreshListener();
-    }
-  }
-
-  @override
   void dispose() {
-    _detachRefreshListener(widget.refreshTrigger);
     WidgetsBinding.instance.removeObserver(this);
     _providersContext = null;
     super.dispose();
@@ -58,22 +45,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && mounted) {
-      _refreshHomeData();
+    // Removed auto-refresh on app resume - data is cached
+  }
+
+  void _loadHomeDataIfNeeded() {
+    final providersContext = _providersContext;
+    if (providersContext == null) {
+      return;
     }
-  }
 
-  void _attachRefreshListener() {
-    widget.refreshTrigger?.addListener(_handleRefreshRequest);
-  }
-
-  void _detachRefreshListener(ValueNotifier<int>? notifier) {
-    notifier?.removeListener(_handleRefreshRequest);
-  }
-
-  void _handleRefreshRequest() {
-    if (!mounted) return;
-    _refreshHomeData();
+    // Load only if not already loaded (will be skipped if cached)
+    providersContext.read<CategoriesCubit>().getCategories();
+    providersContext.read<OffersCubit>().getOffers();
+    providersContext.read<FavoritesCubit>().getFavorites();
   }
 
   Future<void> _refreshHomeData() async {
@@ -82,29 +66,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return;
     }
 
+    // Force refresh all data on pull-to-refresh
     await Future.wait([
-      providersContext.read<CategoriesCubit>().getCategories(),
-      providersContext.read<OffersCubit>().getOffers(),
-      providersContext.read<FavoritesCubit>().getFavorites(),
+      providersContext.read<CategoriesCubit>().getCategories(
+        forceRefresh: true,
+      ),
+      providersContext.read<OffersCubit>().getOffers(forceRefresh: true),
+      providersContext.read<FavoritesCubit>().getFavorites(forceRefresh: true),
     ]);
 
     if (!mounted) return;
 
-    if (_hasRefreshedProducts) {
-      setState(() {
-        _refreshSeed++;
-      });
-    } else {
-      _hasRefreshedProducts = true;
-    }
+    // Update refresh seed to force rebuild of product sections
+    setState(() {
+      _refreshSeed++;
+    });
   }
 
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => di.sl<CategoriesCubit>()),
-        BlocProvider(create: (context) => di.sl<OffersCubit>()),
-        BlocProvider(create: (context) => di.sl<FavoritesCubit>()),
+        // Use BlocProvider.value for singleton cubits to prevent auto-closing
+        BlocProvider.value(value: di.sl<CategoriesCubit>()),
+        BlocProvider.value(value: di.sl<OffersCubit>()),
+        BlocProvider.value(value: di.sl<FavoritesCubit>()),
       ],
       child: Builder(
         builder: (ctx) {

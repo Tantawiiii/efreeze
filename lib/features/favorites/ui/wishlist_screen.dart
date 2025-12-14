@@ -25,12 +25,7 @@ class _WishlistScreenState extends State<WishlistScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Always refresh favorites on first frame when screen is created
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FavoritesCubit>().getFavorites();
-      }
-    });
+    // Load favorites only if not already loaded (via BlocListener below)
   }
 
   @override
@@ -42,21 +37,7 @@ class _WishlistScreenState extends State<WishlistScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // Refresh favorites when app comes to foreground
-    if (state == AppLifecycleState.resumed && mounted) {
-      context.read<FavoritesCubit>().getFavorites();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh favorites whenever dependencies change (e.g., when screen becomes active)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FavoritesCubit>().getFavorites();
-      }
-    });
+    // Removed auto-refresh on app resume - use pull-to-refresh instead
   }
 
   @override
@@ -170,23 +151,32 @@ class _WishlistScreenState extends State<WishlistScreen>
                 );
               }
 
-              return AnimatedGridView.builder(
-                padding: EdgeInsets.all(20.w),
-                crossAxisCount: 2,
-                crossAxisSpacing: 6.w,
-                mainAxisSpacing: 14.h,
-                childAspectRatio: 0.6,
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final favoriteItem = favorites[index];
-                  final product = favoriteItem.card;
-                  return ProductGridCard(
-                    product: product,
-                    isFavorite: true, // Will be handled by FavoriteButton
-                    onFavoriteTap:
-                        null, // FavoriteButton will handle this internally
+              return RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  await context.read<FavoritesCubit>().getFavorites(
+                    forceRefresh: true,
                   );
                 },
+                child: AnimatedGridView.builder(
+                  padding: EdgeInsets.all(20.w),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 6.w,
+                  mainAxisSpacing: 14.h,
+                  childAspectRatio: 0.6,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: favorites.length,
+                  itemBuilder: (context, index) {
+                    final favoriteItem = favorites[index];
+                    final product = favoriteItem.card;
+                    return ProductGridCard(
+                      product: product,
+                      isFavorite: true, // Will be handled by FavoriteButton
+                      onFavoriteTap:
+                          null, // FavoriteButton will handle this internally
+                    );
+                  },
+                ),
               );
             }
 

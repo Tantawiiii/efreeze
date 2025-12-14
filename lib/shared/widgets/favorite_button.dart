@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constant/app_colors.dart';
+import '../../core/di/inject.dart' as di;
 import '../../features/favorites/cubit/favorites_cubit.dart';
 
 class FavoriteButton extends StatefulWidget {
@@ -109,35 +110,46 @@ class _FavoriteButtonState extends State<FavoriteButton>
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<FavoritesCubit, FavoritesState, bool>(
-      selector: _getFavoriteState,
-      builder: (context, isFavorite) {
-        return ScaleTransition(
-          scale: _scaleAnimation,
-          child: Bounce(
-            onTap: () => _handleTap(context, isFavorite),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child: Container(
-                key: ValueKey(isFavorite),
-                padding: EdgeInsets.all(6.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : AppColors.greyTextColor,
-                  size: 20.sp,
-                ),
-              ),
+    // Always use the singleton FavoritesCubit
+    final favoritesCubit = di.sl<FavoritesCubit>();
+
+    // Provide it using BlocProvider.value to ensure it's always available
+    return BlocProvider.value(
+      value: favoritesCubit,
+      child: BlocSelector<FavoritesCubit, FavoritesState, bool>(
+        selector: _getFavoriteState,
+        builder: (context, isFavorite) {
+          return _buildFavoriteIconWidget(isFavorite, context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildFavoriteIconWidget(bool isFavorite, BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Bounce(
+        onTap: () => _handleTap(context, isFavorite),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+          child: Container(
+            key: ValueKey(isFavorite),
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : AppColors.greyTextColor,
+              size: 20.sp,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

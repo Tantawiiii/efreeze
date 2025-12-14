@@ -33,6 +33,7 @@ class _ProductsSectionState extends State<ProductsSection> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Load data only if not already loaded (will be skipped if cached)
       if (widget.isBestProducts) {
         context.read<ProductsCubit>().getBestProducts();
       } else {

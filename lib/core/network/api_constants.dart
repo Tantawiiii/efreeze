@@ -2,7 +2,7 @@ final class ApiConstants {
   ApiConstants._();
 
   // Base URL
-  static const String baseUrl = 'https://job.professionalacademyedu.com';
+  static const String baseUrl = 'https://back.solunile.com';
 
   // API Endpoints
   static const String register = '/api/front/register';

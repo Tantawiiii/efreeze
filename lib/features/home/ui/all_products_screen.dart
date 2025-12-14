@@ -132,22 +132,32 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 );
               }
 
-              return AnimatedGridView.builder(
-                padding: EdgeInsets.all(20.w),
-                crossAxisCount: 2,
-                crossAxisSpacing: 6.w,
-                mainAxisSpacing: 14.h,
-                childAspectRatio: 0.6,
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return ProductGridCard(
-                    product: product,
-                    isFavorite: false,
-                    onFavoriteTap:
-                        null,
-                  );
+              return RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  if (widget.isBestProducts) {
+                    await context.read<ProductsCubit>().getBestProducts();
+                  } else {
+                    await context.read<ProductsCubit>().getAllProducts();
+                  }
                 },
+                child: AnimatedGridView.builder(
+                  padding: EdgeInsets.all(20.w),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 6.w,
+                  mainAxisSpacing: 14.h,
+                  childAspectRatio: 0.6,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductGridCard(
+                      product: product,
+                      isFavorite: false,
+                      onFavoriteTap: null,
+                    );
+                  },
+                ),
               );
             }
 

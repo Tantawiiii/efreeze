@@ -12,12 +12,21 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   FavoritesCubit(this._productsService) : super(FavoritesInitial());
 
   /// Get all favorites
-  Future<void> getFavorites() async {
+  Future<void> getFavorites({bool forceRefresh = false}) async {
+    // Don't reload if we already have data unless force refresh
+    if (!forceRefresh && state is FavoritesSuccess) {
+      return;
+    }
+
+    // Check if cubit is closed before emitting
+    if (isClosed) return;
+
     emit(FavoritesLoading());
 
     try {
       final response = await _productsService.getFavorites();
 
+      if (isClosed) return;
       emit(FavoritesSuccess(response));
     } catch (e) {
       String errorMessage = 'An error occurred. Please try again.';
@@ -42,6 +51,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
         }
       }
 
+      if (isClosed) return;
       emit(FavoritesFailure(errorMessage));
     }
   }
@@ -51,16 +61,19 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     required int cardId,
     required String method,
   }) async {
+    if (isClosed) return;
+
     try {
       final response = await _productsService.toggleFavorite(
         cardId: cardId,
         method: method,
       );
 
+      if (isClosed) return;
       emit(ToggleFavoriteSuccess(response));
-      
-      // Refresh favorites list after toggle
-      await getFavorites();
+
+      // Refresh favorites list after toggle (force refresh)
+      await getFavorites(forceRefresh: true);
     } catch (e) {
       String errorMessage = 'Failed to update favorite. Please try again.';
 
@@ -77,13 +90,14 @@ class FavoritesCubit extends Cubit<FavoritesState> {
         }
       }
 
+      if (isClosed) return;
       emit(ToggleFavoriteFailure(errorMessage));
     }
   }
 
   /// Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(FavoritesInitial());
   }
 }
-

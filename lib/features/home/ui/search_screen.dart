@@ -29,6 +29,8 @@ class _SearchScreenState extends State<SearchScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<SearchCubit>().loadInitialProducts();
+      // Load favorites if not already loaded
+      di.sl<FavoritesCubit>().getFavorites();
     });
   }
 
@@ -49,14 +51,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<LanguageCubit>();
-    return BlocProvider(
-      create: (context) {
-        final cubit = di.sl<FavoritesCubit>();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          cubit.getFavorites();
-        });
-        return cubit;
-      },
+    return BlocProvider.value(
+      value: di.sl<FavoritesCubit>(),
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
@@ -154,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     return AnimatedGridView.builder(
                       crossAxisCount: 2,
                       crossAxisSpacing: 6.w,
-                      mainAxisSpacing: 8.h,
+                      mainAxisSpacing: 4.h,
                       childAspectRatio: 0.58,
                       padding: EdgeInsets.all(12.w),
                       itemCount: products.length,
@@ -162,10 +158,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         final product = products[index];
                         return ProductGridCard(
                           product: product,
-                          isFavorite:
-                              false,
-                          onFavoriteTap:
-                              null,
+                          isFavorite: false,
+                          onFavoriteTap: null,
                         );
                       },
                     );
