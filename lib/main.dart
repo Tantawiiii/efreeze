@@ -12,6 +12,7 @@ import 'core/network/dio_client.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
 import 'core/services/storage_service.dart';
+import 'core/theme/app_theme.dart';
 
 // Global navigator key for showing dialogs from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
                   navigatorKey: navigatorKey,
                   title: 'EFreeze',
                   debugShowCheckedModeBanner: false,
+                  theme: AppTheme.light,
                   locale: locale,
                   supportedLocales: supportedLocales,
                   localizationsDelegates: const [

@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constant/app_colors.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../cubit/signup_cubit.dart';
 
@@ -47,12 +48,7 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppTexts.passwordsDoNotMatch),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, AppTexts.passwordsDoNotMatch);
       return;
     }
 
@@ -66,9 +62,16 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _pickAvatar(ImageSource source) async {
-    final File? file = await PickAvatarService.pickAvatar(source);
-    if (file != null) {
-      setState(() => _avatarFile = file);
+    final result = await PickAvatarService.pickAvatar(source);
+    if (!mounted) return;
+
+    switch (result.status) {
+      case AvatarPickStatus.success:
+        setState(() => _avatarFile = result.file);
+      case AvatarPickStatus.tooLarge:
+        AppSnackbar.error(context, AppTexts.avatarTooLarge);
+      case AvatarPickStatus.cancelled:
+        break;
     }
   }
 
@@ -114,29 +117,18 @@ class _SignupScreenState extends State<SignupScreen> {
       child: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
           if (state is SignupSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppTexts.accountCreatedSuccessfully),
-                backgroundColor: Colors.green,
-              ),
-            );
-            // Navigate to next screen or pop
+            AppSnackbar.success(context, AppTexts.accountCreatedSuccessfully);
             Navigator.pop(context);
           } else if (state is SignupFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            final message = state.message.toLowerCase().contains('already been taken')
+                ? AppTexts.emailAlreadyRegistered
+                : state.message;
+            AppSnackbar.error(context, message);
           }
         },
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(AppTexts.createAcc),
-            backgroundColor: Colors.transparent,
-          ),
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.whiteBackground,
+          appBar: AppBar(title: Text(AppTexts.createAcc)),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),

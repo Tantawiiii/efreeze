@@ -10,7 +10,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/search_cubit.dart';
 import '../../favorites/cubit/favorites_cubit.dart';
-import '../widgets/product_grid_card.dart';
+import '../widgets/product_model_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -26,10 +26,10 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _controller.addListener(_onSearchTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<SearchCubit>().loadInitialProducts();
-      // Load favorites if not already loaded
       di.sl<FavoritesCubit>().getFavorites();
     });
   }
@@ -37,14 +37,20 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _controller.removeListener(_onSearchTextChanged);
     _controller.dispose();
     super.dispose();
   }
 
-  void _onChanged(String value) {
+  void _onSearchTextChanged() {
+    if (_controller.value.composing.isValid) {
+      return;
+    }
+
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 350), () {
-      context.read<SearchCubit>().search(value);
+    _debounce = Timer(const Duration(milliseconds: 450), () {
+      if (!mounted) return;
+      context.read<SearchCubit>().search(_controller.text);
     });
   }
 
@@ -54,40 +60,45 @@ class _SearchScreenState extends State<SearchScreen> {
     return BlocProvider.value(
       value: di.sl<FavoritesCubit>(),
       child: Scaffold(
-        backgroundColor: AppColors.white,
-        appBar: AppBar(
-          title: Text(AppTexts.search),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
+        backgroundColor: AppColors.whiteBackground,
+        appBar: AppBar(title: Text(AppTexts.search)),
         body: Padding(
           padding: EdgeInsets.all(16.w),
           child: Column(
             children: [
               TextField(
                 controller: _controller,
-                onChanged: _onChanged,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.search,
+                onSubmitted: (value) {
+                  _debounce?.cancel();
+                  context.read<SearchCubit>().search(value);
+                },
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   hintText: AppTexts.searchProductsHint,
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: AppColors.greyTextColor,
+                  ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppColors.textFieldFillColor,
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 14.w,
-                    vertical: 12.h,
+                    horizontal: 16.w,
+                    vertical: 14.h,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
                       color: AppColors.textFieldBorderColor,
                     ),
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: AppColors.primaryColor,
-                      width: 1.4,
+                      width: 1.5,
                     ),
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
               ),
@@ -111,12 +122,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       return AnimatedGridView.builder(
                         padding: EdgeInsets.all(14.w),
                         crossAxisCount: 2,
-                        crossAxisSpacing: 6.w,
+                        crossAxisSpacing: 10.w,
                         mainAxisSpacing: 12.h,
-                        childAspectRatio: 0.6,
+                        childAspectRatio: 0.68,
                         itemCount: 6,
                         itemBuilder: (context, index) {
-                          return ProductGridCardShimmer();
+                          return const ProductCardShimmer(inGrid: true);
                         },
                       );
                     }
@@ -149,17 +160,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     return AnimatedGridView.builder(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 6.w,
-                      mainAxisSpacing: 4.h,
-                      childAspectRatio: 0.58,
+                      crossAxisSpacing: 10.w,
+                      mainAxisSpacing: 12.h,
+                      childAspectRatio: 0.68,
                       padding: EdgeInsets.all(12.w),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
-                        final product = products[index];
-                        return ProductGridCard(
-                          product: product,
-                          isFavorite: false,
-                          onFavoriteTap: null,
+                        return ProductModelCard(
+                          product: products[index],
+                          inGrid: true,
                         );
                       },
                     );

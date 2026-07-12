@@ -7,7 +7,8 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/animated_list_view.dart';
 import '../cubit/products_cubit.dart';
 import '../../favorites/cubit/favorites_cubit.dart';
-import '../widgets/product_grid_card.dart';
+import '../../cart/cubit/cart_cubit.dart';
+import '../widgets/product_model_card.dart';
 
 class AllProductsScreen extends StatefulWidget {
   final String title;
@@ -50,6 +51,15 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
             return cubit;
           },
         ),
+        BlocProvider(
+          create: (context) {
+            final cubit = di.sl<CartCubit>();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              cubit.getCart();
+            });
+            return cubit;
+          },
+        ),
       ],
       child: Scaffold(
         backgroundColor: AppColors.white,
@@ -64,12 +74,12 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
               return AnimatedGridView.builder(
                 padding: EdgeInsets.all(20.w),
                 crossAxisCount: 2,
-                crossAxisSpacing: 6.w,
-                mainAxisSpacing: 14.h,
-                childAspectRatio: 0.6,
+                crossAxisSpacing: 10.w,
+                mainAxisSpacing: 12.h,
+                childAspectRatio: 0.68,
                 itemCount: 6,
                 itemBuilder: (context, index) {
-                  return ProductGridCardShimmer();
+                  return const ProductCardShimmer(inGrid: true);
                 },
               );
             }
@@ -144,17 +154,15 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 child: AnimatedGridView.builder(
                   padding: EdgeInsets.all(20.w),
                   crossAxisCount: 2,
-                  crossAxisSpacing: 6.w,
-                  mainAxisSpacing: 14.h,
-                  childAspectRatio: 0.6,
+                  crossAxisSpacing: 10.w,
+                  mainAxisSpacing: 12.h,
+                  childAspectRatio: 0.68,
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: products.length,
                   itemBuilder: (context, index) {
-                    final product = products[index];
-                    return ProductGridCard(
-                      product: product,
-                      isFavorite: false,
-                      onFavoriteTap: null,
+                    return ProductModelCard(
+                      product: products[index],
+                      inGrid: true,
                     );
                   },
                 ),

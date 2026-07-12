@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../home/services/products_service.dart';
 import '../models/favorites_response_model.dart';
 import '../models/add_favorite_response_model.dart';
+import '../models/favorite_item_model.dart';
 
 part 'favorites_state.dart';
 
@@ -63,6 +65,12 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   }) async {
     if (isClosed) return;
 
+    // Optimistically update the current state if we have favorites loaded
+    FavoritesResponseModel? previousFavorites;
+    if (state is FavoritesSuccess) {
+      previousFavorites = (state as FavoritesSuccess).response;
+    }
+
     try {
       final response = await _productsService.toggleFavorite(
         cardId: cardId,
@@ -70,11 +78,42 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       );
 
       if (isClosed) return;
-      emit(ToggleFavoriteSuccess(response));
 
-      // Refresh favorites list after toggle (force refresh)
-      await getFavorites(forceRefresh: true);
+      // Update favorites list optimistically without refetching
+      if (previousFavorites != null) {
+        if (method == 'delete') {
+          // Optimistically remove the favorite from the list
+          final updatedData = List<FavoriteItemModel>.from(
+            previousFavorites.data,
+          );
+          updatedData.removeWhere((fav) => fav.card.id == cardId);
+
+          // Emit updated state without going through loading
+          emit(
+            FavoritesSuccess(
+              FavoritesResponseModel(
+                result: previousFavorites.result,
+                data: updatedData,
+                message: previousFavorites.message,
+                status: previousFavorites.status,
+              ),
+            ),
+          );
+        } else {
+          // For 'add', we need the full card data which we don't have
+          // Refresh silently in background without showing loading state
+          _refreshFavoritesSilently();
+        }
+      } else {
+        // If we don't have previous state, refresh silently
+        _refreshFavoritesSilently();
+      }
     } catch (e) {
+      // Revert to previous state on error
+      if (previousFavorites != null && !isClosed) {
+        emit(FavoritesSuccess(previousFavorites));
+      }
+
       String errorMessage = 'Failed to update favorite. Please try again.';
 
       if (e is DioException) {
@@ -92,6 +131,25 @@ class FavoritesCubit extends Cubit<FavoritesState> {
 
       if (isClosed) return;
       emit(ToggleFavoriteFailure(errorMessage));
+    }
+  }
+
+  /// Refresh favorites silently without emitting loading state
+  Future<void> _refreshFavoritesSilently() async {
+    if (isClosed) return;
+
+    try {
+      final response = await _productsService.getFavorites();
+      if (isClosed) return;
+      // Only emit if we're still in a state that needs updating
+      if (state is! FavoritesSuccess ||
+          (state as FavoritesSuccess).response.data.length !=
+              response.data.length) {
+        emit(FavoritesSuccess(response));
+      }
+    } catch (e) {
+      // Silently fail - don't emit error state to avoid disrupting UI
+      debugPrint('Silent favorites refresh failed: $e');
     }
   }
 

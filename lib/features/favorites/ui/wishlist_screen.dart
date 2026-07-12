@@ -5,9 +5,11 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/animated_list_view.dart';
+import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../cubit/favorites_cubit.dart';
-import '../../home/widgets/product_grid_card.dart';
+import '../../home/widgets/product_model_card.dart';
+import '../../../shared/widgets/animated_list_view.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -34,11 +36,6 @@ class _WishlistScreenState extends State<WishlistScreen>
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    // Removed auto-refresh on app resume - use pull-to-refresh instead
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,18 +44,11 @@ class _WishlistScreenState extends State<WishlistScreen>
     return BlocListener<FavoritesCubit, FavoritesState>(
       listener: (context, state) {
         if (state is ToggleFavoriteSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.response.message),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AppSnackbar.success(context, state.response.message);
           // Refresh favorites after toggling
           context.read<FavoritesCubit>().getFavorites();
         } else if (state is ToggleFavoriteFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
+          AppSnackbar.error(context, state.message);
         }
         // Auto-refresh when coming back to this screen
         if (state is FavoritesInitial) {
@@ -66,53 +56,34 @@ class _WishlistScreenState extends State<WishlistScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.whiteBackground,
         appBar: AppBar(
           title: Text(AppTexts.wishlist),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
           automaticallyImplyLeading: false,
         ),
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {
             if (state is FavoritesLoading) {
               return AnimatedGridView.builder(
-                padding: EdgeInsets.all(20.w),
+                padding: EdgeInsets.all(12.w),
                 crossAxisCount: 2,
-                crossAxisSpacing: 6.w,
-                mainAxisSpacing: 14.h,
-                childAspectRatio: 0.6,
+                crossAxisSpacing: 10.w,
+                mainAxisSpacing: 12.h,
+                childAspectRatio: 0.68,
                 itemCount: 6,
                 itemBuilder: (context, index) {
-                  return ProductGridCardShimmer();
+                  return const ProductCardShimmer(inGrid: true);
                 },
               );
             }
 
             if (state is FavoritesFailure) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red, size: 48.sp),
-                    SizedBox(height: 16.h),
-                    Text(
-                      state.message,
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 14.sp,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<FavoritesCubit>().getFavorites();
-                      },
-                      child: Text(AppTexts.retry),
-                    ),
-                  ],
-                ),
+              return EmptyState(
+                icon: Icons.error_outline_rounded,
+                title: state.message,
+                actionLabel: AppTexts.retry,
+                onAction: () =>
+                    context.read<FavoritesCubit>().getFavorites(),
               );
             }
 
@@ -120,34 +91,10 @@ class _WishlistScreenState extends State<WishlistScreen>
               final favorites = state.response.data;
 
               if (favorites.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.favorite_border,
-                        color: AppColors.greyTextColor,
-                        size: 80.sp,
-                      ),
-                      SizedBox(height: 16.h),
-                      Text(
-                        AppTexts.wishlistEmpty,
-                        style: TextStyle(
-                          color: AppColors.greyTextColor,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        AppTexts.addItemsToWishlist,
-                        style: TextStyle(
-                          color: AppColors.greyTextColor,
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                    ],
-                  ),
+                return EmptyState(
+                  icon: Icons.favorite_border_rounded,
+                  title: AppTexts.wishlistEmpty,
+                  subtitle: AppTexts.addItemsToWishlist,
                 );
               }
 
@@ -159,21 +106,17 @@ class _WishlistScreenState extends State<WishlistScreen>
                   );
                 },
                 child: AnimatedGridView.builder(
-                  padding: EdgeInsets.all(20.w),
+                  padding: EdgeInsets.all(12.w),
                   crossAxisCount: 2,
-                  crossAxisSpacing: 6.w,
-                  mainAxisSpacing: 14.h,
-                  childAspectRatio: 0.6,
+                  crossAxisSpacing: 10.w,
+                  mainAxisSpacing: 12.h,
+                  childAspectRatio: 0.68,
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: favorites.length,
                   itemBuilder: (context, index) {
-                    final favoriteItem = favorites[index];
-                    final product = favoriteItem.card;
-                    return ProductGridCard(
-                      product: product,
-                      isFavorite: true, // Will be handled by FavoriteButton
-                      onFavoriteTap:
-                          null, // FavoriteButton will handle this internally
+                    return ProductModelCard(
+                      product: favorites[index].card,
+                      inGrid: true,
                     );
                   },
                 ),

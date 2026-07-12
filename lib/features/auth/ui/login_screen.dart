@@ -7,11 +7,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_assets.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../cubit/login_cubit.dart';
-
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,23 +19,46 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+    _animController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
   void _handleLogin(LoginCubit cubit) {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
+    if (!_formKey.currentState!.validate()) return;
     cubit.login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
@@ -50,119 +72,120 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(
-                content: Text(AppTexts.loginSuccess),
-                backgroundColor: Colors.green,
-              ),
-            );
+            AppSnackbar.success(context, AppTexts.loginSuccess);
             Navigator.pushReplacementNamed(context, AppRoutes.home);
           } else if (state is LoginFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AppSnackbar.error(context, state.message);
           }
         },
         child: Scaffold(
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.whiteBackground,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 8.h),
-                    Image.asset(
-                      AppAssets.appLogoSplashWithoutBAckImg,
-                      width: 120.w,
-                      height: 140.w,
-                      fit: BoxFit.cover,
-                    ),
-                    SizedBox(height: 30.h),
-                    Text(
-                      AppTexts.welcomeBack,
-                      style: TextStyle(
-                        color: AppColors.blackTextColor,
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      AppTexts.loginToCont,
-                      style: TextStyle(
-                        color: AppColors.greyTextColor,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                    SizedBox(height: 38.h),
-                    AppTextField(
-                      controller: _emailController,
-                      hint: AppTexts.email,
-                      keyboardType: TextInputType.emailAddress,
-                      leadingIcon: Icons.email_outlined,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppTexts.pleaseEnterEmail;
-                        }
-                        if (!value.contains('@')) {
-                          return AppTexts.pleaseEnterValidEmail;
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 14.h),
-                    AppTextField(
-                      controller: _passwordController,
-                      hint: AppTexts.password,
-                      obscure: true,
-                      obscurable: true,
-                      leadingIcon: Icons.lock_outline,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppTexts.pleaseEnterPass;
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 24.h),
-                    BlocBuilder<LoginCubit, LoginState>(
-                      builder: (context, state) {
-                        final isLoading = state is LoginLoading;
-                        return PrimaryButton(
-                          title: isLoading ? AppTexts.loginLoading : AppTexts.login,
-                          onPressed: isLoading
-                              ? () {}
-                              : () => _handleLogin(context.read<LoginCubit>()),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 14.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          AppTexts.dontHaveAcc,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: AppColors.greyTextColor,
+                        SizedBox(height: 24.h),
+                        Container(
+                          padding: EdgeInsets.all(20.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.overlayColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Image.asset(
+                            AppAssets.appLogoHeaderImg,
+                            height: 64.h,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.signup),
-                          child:  Text(AppTexts.signUp, style: TextStyle(
-                            color: AppColors.primaryColor,
-                            fontSize: 16.sp
-                          ),),
+                        SizedBox(height: 28.h),
+                        Text(
+                          AppTexts.welcomeBack,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          AppTexts.loginToCont,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 36.h),
+                        AppTextField(
+                          controller: _emailController,
+                          hint: AppTexts.email,
+                          keyboardType: TextInputType.emailAddress,
+                          leadingIcon: Icons.email_outlined,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppTexts.pleaseEnterEmail;
+                            }
+                            if (!value.contains('@')) {
+                              return AppTexts.pleaseEnterValidEmail;
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16.h),
+                        AppTextField(
+                          controller: _passwordController,
+                          hint: AppTexts.password,
+                          obscure: true,
+                          obscurable: true,
+                          leadingIcon: Icons.lock_outline,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppTexts.pleaseEnterPass;
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 28.h),
+                        BlocBuilder<LoginCubit, LoginState>(
+                          builder: (context, state) {
+                            final isLoading = state is LoginLoading;
+                            return PrimaryButton(
+                              title: AppTexts.login,
+                              isLoading: isLoading,
+                              icon: Icons.login_rounded,
+                              onPressed: isLoading
+                                  ? null
+                                  : () =>
+                                      _handleLogin(context.read<LoginCubit>()),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppTexts.dontHaveAcc,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pushNamed(AppRoutes.signup),
+                              child: Text(
+                                AppTexts.signUp,
+                                style: TextStyle(
+                                  color: AppColors.primaryColor,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

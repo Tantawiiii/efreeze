@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:efreeze/features/contact_us/servises/contact_servises.dart';
-import '../../settings/services/settings_service.dart';
 import '../models/contact_us_request_model.dart';
 import '../models/contact_us_response_model.dart';
 

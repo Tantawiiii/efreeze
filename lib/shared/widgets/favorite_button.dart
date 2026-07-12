@@ -44,18 +44,25 @@ class _FavoriteButtonState extends State<FavoriteButton>
     if (_optimisticFavorite != null) {
       return _optimisticFavorite!;
     }
+
     if (state is FavoritesSuccess) {
-      return state.response.data.any((fav) => fav.card.id == widget.productId);
+      final isFavorite = state.response.data.any(
+        (fav) => fav.card.id == widget.productId,
+      );
+      _lastKnownFavoriteState = isFavorite;
+      return isFavorite;
     }
-    return false;
+
+    return _lastKnownFavoriteState ?? false;
   }
+
+  bool? _lastKnownFavoriteState;
 
   void _handleTap(BuildContext context, bool currentFavorite) {
     setState(() {
       _optimisticFavorite = !currentFavorite;
     });
 
-    // Animate the tap
     _animationController.forward().then((_) {
       _animationController.reverse();
     });
@@ -63,7 +70,6 @@ class _FavoriteButtonState extends State<FavoriteButton>
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
-      // Toggle favorite directly
       try {
         context
             .read<FavoritesCubit>()
@@ -72,7 +78,6 @@ class _FavoriteButtonState extends State<FavoriteButton>
               method: currentFavorite ? 'delete' : 'add',
             )
             .then((_) {
-              // Clear optimistic state after API call completes
               if (mounted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) {
@@ -84,7 +89,6 @@ class _FavoriteButtonState extends State<FavoriteButton>
               }
             })
             .catchError((error) {
-              // Revert optimistic update on error
               if (mounted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) {
@@ -96,9 +100,8 @@ class _FavoriteButtonState extends State<FavoriteButton>
               }
             });
       } catch (e) {
-        // FavoritesCubit not available in context
         debugPrint('FavoritesCubit not found in context: $e');
-        // Revert optimistic update
+
         if (mounted) {
           setState(() {
             _optimisticFavorite = null;
@@ -110,10 +113,8 @@ class _FavoriteButtonState extends State<FavoriteButton>
 
   @override
   Widget build(BuildContext context) {
-    // Always use the singleton FavoritesCubit
     final favoritesCubit = di.sl<FavoritesCubit>();
 
-    // Provide it using BlocProvider.value to ensure it's always available
     return BlocProvider.value(
       value: favoritesCubit,
       child: BlocSelector<FavoritesCubit, FavoritesState, bool>(

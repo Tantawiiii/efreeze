@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/network/api_constants.dart';
 import '../../../core/network/api_service.dart';
 import '../models/product_details_response_model.dart';
@@ -36,6 +38,7 @@ class ProductsService {
   /// [method] can be: "add" (first time), "plus" (increase quantity), "minus" (decrease quantity), "delete" (remove item)
   Future<AddToCartResponseModel> addToCart({
     required int productId,
+    required String color,
     String method = 'add',
   }) async {
     try {
@@ -43,6 +46,7 @@ class ProductsService {
         ApiConstants.cart,
         data: {
           'card_id': productId,
+          'color': color,
           'method': method,
         },
       );
@@ -173,10 +177,15 @@ class ProductsService {
   }
 
   /// Search products by keyword
-  Future<ProductsListResponseModel> searchProducts(String keyword) async {
+  Future<ProductsListResponseModel> searchProducts(
+    String keyword, {
+    CancelToken? cancelToken,
+  }) async {
     try {
       final response = await _apiService.get(
-        '/api/front/search-cards?keyword=$keyword',
+        ApiConstants.searchCards,
+        queryParameters: {'keyword': keyword.trim()},
+        cancelToken: cancelToken,
       );
 
       return ProductsListResponseModel.fromJson(

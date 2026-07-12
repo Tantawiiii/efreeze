@@ -6,9 +6,10 @@ import '../../../core/di/inject.dart' as di;
 import '../../../core/localization/language_cubit.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/routing/app_routes.dart';
+import '../../../core/routing/page_transitions.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../shared/widgets/language_switcher.dart';
-import '../../../shared/widgets/animated_list_view.dart';
+import '../../../shared/widgets/settings_tile.dart';
 import '../../auth/services/auth_service.dart';
 import '../cubit/update_profile_cubit.dart';
 import '../../contact_us/cubit/contact_us_cubit.dart';
@@ -21,16 +22,12 @@ class SettingsScreen extends StatelessWidget {
   void _openUpdateProfile(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider(
+      fadeSlideRoute(
+        page: BlocProvider(
           create: (_) => di.sl<UpdateProfileCubit>(),
           child: Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(
-              title: Text(AppTexts.updateProfile),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
+            backgroundColor: AppColors.whiteBackground,
+            appBar: AppBar(title: Text(AppTexts.updateProfile)),
             body: const UpdateProfileTab(),
           ),
         ),
@@ -41,16 +38,12 @@ class SettingsScreen extends StatelessWidget {
   void _openContactUs(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider(
+      fadeSlideRoute(
+        page: BlocProvider(
           create: (_) => di.sl<ContactUsCubit>(),
           child: Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(
-              title: Text(AppTexts.contactUs),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
+            backgroundColor: AppColors.whiteBackground,
+            appBar: AppBar(title: Text(AppTexts.contactUs)),
             body: const ContactUsTab(),
           ),
         ),
@@ -71,6 +64,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorColor),
             child: Text(AppTexts.logout),
           ),
         ],
@@ -81,11 +75,8 @@ class SettingsScreen extends StatelessWidget {
 
     try {
       await di.sl<AuthService>().logout();
-    } catch (_) {
-      // ignore server logout failure
-    }
+    } catch (_) {}
 
-    // Clear local auth
     await di.sl<StorageService>().clearAuthData();
     di.sl<DioClient>().clearAuthToken();
 
@@ -102,65 +93,46 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     context.watch<LanguageCubit>();
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.whiteBackground,
       appBar: AppBar(
         title: Text(AppTexts.settings),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        automaticallyImplyLeading: false,
       ),
-      body: AnimatedListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return ListTile(
-              leading: const Icon(Icons.account_circle_outlined),
-              title: Text(AppTexts.myAccount),
-              subtitle: Text(AppTexts.orders),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => Navigator.pushNamed(context, AppRoutes.userInfo),
-            );
-          } else if (index == 1) {
-            return const Divider(height: 1);
-          } else if (index == 2) {
-            return ListTile(
-              leading: const Icon(Icons.language_outlined),
-              title: Text(AppTexts.language),
-              subtitle: Text(AppTexts.changeLanguage),
-              trailing: const LanguageSwitcher(),
-            );
-          } else if (index == 3) {
-            return Column(
-              children: [
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.person_outline),
-                  title: Text(AppTexts.updateProfile),
-                  subtitle: Text(AppTexts.editYourInfo),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => _openUpdateProfile(context),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.support_agent_outlined),
-                  title: Text(AppTexts.contactUs),
-                  subtitle: Text(AppTexts.sendUsMessage),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => _openContactUs(context),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  title: Text(AppTexts.logout),
-                  subtitle: Text(AppTexts.signOutReturn),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => _logout(context),
-                ),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+      body: ListView(
+        padding: EdgeInsets.only(top: 8, bottom: 120),
+        children: [
+          SettingsTile(
+            icon: Icons.account_circle_outlined,
+            title: AppTexts.myAccount,
+            subtitle: AppTexts.orders,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.userInfo),
+          ),
+          SettingsTile(
+            icon: Icons.language_outlined,
+            title: AppTexts.language,
+            subtitle: AppTexts.changeLanguage,
+            trailing: const LanguageSwitcher(),
+          ),
+          SettingsTile(
+            icon: Icons.person_outline,
+            title: AppTexts.updateProfile,
+            subtitle: AppTexts.editYourInfo,
+            onTap: () => _openUpdateProfile(context),
+          ),
+          SettingsTile(
+            icon: Icons.support_agent_outlined,
+            title: AppTexts.contactUs,
+            subtitle: AppTexts.sendUsMessage,
+            onTap: () => _openContactUs(context),
+          ),
+          SettingsTile(
+            icon: Icons.logout_rounded,
+            title: AppTexts.logout,
+            subtitle: AppTexts.signOutReturn,
+            isDestructive: true,
+            onTap: () => _logout(context),
+          ),
+        ],
       ),
     );
   }

@@ -44,8 +44,18 @@ class DioClient {
         },
         onError: (error, handler) {
           // Handle 401 Unauthorized errors (token expired)
+          // But exclude authentication endpoints (login, register) from token expiration handling
           if (error.response?.statusCode == 401) {
-            _handleTokenExpiration();
+            final requestPath = error.requestOptions.path;
+            final isAuthEndpoint =
+                requestPath.contains('/api/front/login') ||
+                requestPath.contains('/api/front/register') ||
+                requestPath.contains('/api/front/signup');
+
+            // Only show token expiration dialog for authenticated endpoints
+            if (!isAuthEndpoint) {
+              _handleTokenExpiration();
+            }
             return handler.next(error);
           }
           return handler.next(error);

@@ -11,18 +11,19 @@ class CartCubit extends Cubit<CartState> {
   CartCubit(this._productsService) : super(CartInitial());
 
   /// Fetch cart items
-  Future<void> getCart() async {
-    emit(CartLoading());
+  Future<void> getCart({bool showLoading = true}) async {
+    if (showLoading) {
+      emit(CartLoading());
+    }
 
     try {
       final response = await _productsService.getCart();
 
       emit(CartSuccess(response));
     } catch (e, stackTrace) {
-      // Log the actual error for debugging
       print('Cart Error: $e');
       print('Stack Trace: $stackTrace');
-      
+
       String errorMessage = 'An error occurred. Please try again.';
 
       if (e is DioException) {
@@ -44,9 +45,7 @@ class CartCubit extends Cubit<CartState> {
           errorMessage = 'No internet connection. Please check your network.';
         }
       } else {
-        // Handle non-Dio exceptions (like JSON parsing errors)
         errorMessage = e.toString();
-        // If it's a format exception, show a user-friendly message
         if (e.toString().contains('type') || e.toString().contains('null')) {
           errorMessage = 'Failed to parse cart data. Please try again.';
         }
@@ -56,9 +55,40 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
+  /// Update cart item quantity or remove it.
+  Future<String?> updateCartItem({
+    required int cardId,
+    required String color,
+    required String method,
+  }) async {
+    try {
+      await _productsService.addToCart(
+        productId: cardId,
+        color: color,
+        method: method,
+      );
+      await getCart(showLoading: false);
+      return null;
+    } catch (e) {
+      String errorMessage = 'Failed to update cart. Please try again.';
+
+      if (e is DioException) {
+        if (e.response != null) {
+          final errorData = e.response?.data;
+          if (errorData is Map && errorData.containsKey('message')) {
+            errorMessage = errorData['message'].toString();
+          } else if (errorData is Map && errorData.containsKey('error')) {
+            errorMessage = errorData['error'].toString();
+          }
+        }
+      }
+
+      return errorMessage;
+    }
+  }
+
   /// Reset to initial state
   void reset() {
     emit(CartInitial());
   }
 }
-

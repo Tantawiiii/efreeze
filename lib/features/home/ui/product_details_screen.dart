@@ -368,6 +368,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                                 _updateQuantity(
                                                   context,
                                                   currentProduct.id,
+                                                  currentProduct.color,
                                                   'minus',
                                                 );
                                               },
@@ -389,6 +390,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                                 _updateQuantity(
                                                   context,
                                                   currentProduct.id,
+                                                  currentProduct.color,
                                                   'plus',
                                                 );
                                               },
@@ -417,6 +419,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                                   .addToCart(
                                                     productId:
                                                         currentProduct.id,
+                                                    color: currentProduct.color,
                                                   );
                                             },
                                     );
@@ -658,11 +661,16 @@ class ProductDetailsScreen extends StatelessWidget {
   void _updateQuantity(
     BuildContext context,
     int productId,
+    String color,
     String method,
   ) async {
     final productsService = di.sl<ProductsService>();
     try {
-      await productsService.addToCart(productId: productId, method: method);
+      await productsService.addToCart(
+        productId: productId,
+        color: color,
+        method: method,
+      );
       if (context.mounted) {
         context.read<CartCubit>().getCart();
         context.read<ProductDetailsCubit>().getProductDetails(productId);

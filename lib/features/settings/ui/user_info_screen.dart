@@ -251,7 +251,7 @@ class UserInfoScreen extends StatelessWidget {
             final index = entry.key;
             final order = entry.value;
             return _buildOrderCard(context, order, index);
-          }).toList(),
+          }),
       ],
     );
   }
