@@ -6,7 +6,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum AvatarPickStatus { success, cancelled, tooLarge }
 
@@ -35,14 +34,8 @@ class PickAvatarService {
   static const int maxAvatarBytes = 2048 * 1024;
 
   static Future<AvatarPickResult> pickAvatar(ImageSource source) async {
-    if (source == ImageSource.camera) {
-      final status = await Permission.camera.request();
-      if (!status.isGranted) return AvatarPickResult.cancelled();
-    } else {
-      await Permission.photos.request();
-      await Permission.storage.request();
-    }
-
+    // Gallery uses the Android/iOS system photo picker (no broad media access).
+    // Camera permission is requested by the platform when needed.
     final XFile? file = await _picker.pickImage(
       source: source,
       imageQuality: 75,
