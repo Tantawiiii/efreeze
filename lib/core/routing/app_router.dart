@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'page_transitions.dart';
 import '../../features/auth/ui/login_screen.dart';
 import 'app_routes.dart';
 import '../../features/splash/splash_screen.dart';
@@ -21,64 +22,74 @@ import '../../features/orders/ui/order_details_screen.dart';
 Route<dynamic> onGenerateAppRoute(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.splash:
-      return MaterialPageRoute(builder: (_) => const SplashScreen());
+      return fadeSlideRoute(page: const SplashScreen(), settings: settings);
     case AppRoutes.onboarding:
-      return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+      return fadeSlideRoute(page: const OnboardingScreen(), settings: settings);
     case AppRoutes.login:
-      return MaterialPageRoute(builder: (_) => const LoginScreen());
+      return fadeSlideRoute(page: const LoginScreen(), settings: settings);
     case AppRoutes.signup:
-      return MaterialPageRoute(builder: (_) => const SignupScreen());
+      return fadeSlideRoute(page: const SignupScreen(), settings: settings);
     case AppRoutes.home:
-      return MaterialPageRoute(builder: (_) => const MainNavigationScreen());
+      return scaleFadeRoute(
+        page: const MainNavigationScreen(),
+        settings: settings,
+      );
     case AppRoutes.categoryProducts:
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) => CategoryProductsScreen(
+      return fadeSlideRoute(
+        settings: settings,
+        page: CategoryProductsScreen(
           categoryId: args?['categoryId'] as int,
           categoryName: args?['categoryName'] as String? ?? 'Products',
         ),
       );
     case AppRoutes.productDetails:
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) =>
-            ProductDetailsScreen(productId: args?['productId'] as int),
+      return scaleFadeRoute(
+        settings: settings,
+        page: ProductDetailsScreen(productId: args?['productId'] as int),
       );
     case AppRoutes.cart:
-      return MaterialPageRoute(builder: (_) => const CartScreen());
+      return fadeSlideRoute(page: const CartScreen(), settings: settings);
     case AppRoutes.checkout:
       final args = settings.arguments as List<CartItemModel>?;
-      return MaterialPageRoute(
-        builder: (_) => CheckoutScreen(cartItems: args ?? []),
+      return fadeSlideRoute(
+        settings: settings,
+        page: CheckoutScreen(cartItems: args ?? []),
       );
     case AppRoutes.allProducts:
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) => AllProductsScreen(
+      return fadeSlideRoute(
+        settings: settings,
+        page: AllProductsScreen(
           title: args?['title'] as String? ?? 'All Products',
           isBestProducts: args?['isBestProducts'] as bool? ?? false,
         ),
       );
     case AppRoutes.addReview:
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) => AddReviewScreen(productId: args?['productId'] as int),
+      return fadeSlideRoute(
+        settings: settings,
+        page: AddReviewScreen(productId: args?['productId'] as int),
       );
     case AppRoutes.settings:
-      return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      return fadeSlideRoute(page: const SettingsScreen(), settings: settings);
     case AppRoutes.userInfo:
-      return MaterialPageRoute(builder: (_) => const UserInfoScreen());
+      return fadeSlideRoute(page: const UserInfoScreen(), settings: settings);
     case AppRoutes.orderDetails:
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) => OrderDetailsScreen(
+      return fadeSlideRoute(
+        settings: settings,
+        page: OrderDetailsScreen(
           orderNumber: args?['orderNumber'] as String? ?? '',
         ),
       );
     default:
-      return MaterialPageRoute(
-        builder: (_) =>
-            const Scaffold(body: Center(child: Text('Route not found'))),
+      return fadeSlideRoute(
+        settings: settings,
+        page: const Scaffold(
+          body: Center(child: Text('Route not found')),
+        ),
       );
   }
 }

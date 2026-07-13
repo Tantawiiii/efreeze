@@ -17,35 +17,47 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CurvedNavigationBar(
-      index: selectedIndex,
-      onTap: onTap,
-      backgroundColor: Colors.transparent,
-      color: AppColors.primaryColor,
-      buttonBackgroundColor: AppColors.primaryColor,
-      height: 68.h,
-      animationDuration: const Duration(milliseconds: 300),
-      items: [
-        Icon(Icons.favorite_border, color: Colors.white, size: 24.r),
-        BlocBuilder<CartCubit, CartState>(
-          builder: (context, state) {
-            int itemCount = 0;
-            if (state is CartSuccess) {
-              itemCount = state.response.data.fold<int>(
-                0,
-                (total, item) => total + item.quantity,
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryColor.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: CurvedNavigationBar(
+        index: selectedIndex,
+        onTap: onTap,
+        backgroundColor: Colors.transparent,
+        color: AppColors.primaryColor,
+        buttonBackgroundColor: AppColors.primaryLight,
+        height: 64.h.clamp(56.0, 75.0),
+        animationDuration: const Duration(milliseconds: 350),
+        animationCurve: Curves.easeOutCubic,
+        items: [
+          Icon(Icons.favorite_border_rounded, color: Colors.white, size: 24.r),
+          BlocBuilder<CartCubit, CartState>(
+            builder: (context, state) {
+              int itemCount = 0;
+              if (state is CartSuccess) {
+                itemCount = state.response.data.fold<int>(
+                  0,
+                  (total, item) => total + item.quantity,
+                );
+              }
+              return _NavItemWithBadge(
+                icon: Icons.shopping_cart_rounded,
+                count: itemCount,
               );
-            }
-            return _NavItemWithBadge(
-              icon: Icons.shopping_cart,
-              count: itemCount,
-            );
-          },
-        ),
-        Icon(Icons.home, color: Colors.white, size: 24.r),
-        Icon(Icons.search, color: Colors.white, size: 24.r),
-        Icon(Icons.settings, color: Colors.white, size: 24.r),
-      ],
+            },
+          ),
+          Icon(Icons.home_rounded, color: Colors.white, size: 26.r),
+          Icon(Icons.search_rounded, color: Colors.white, size: 24.r),
+          Icon(Icons.settings_rounded, color: Colors.white, size: 24.r),
+        ],
+      ),
     );
   }
 }
@@ -68,20 +80,32 @@ class _NavItemWithBadge extends StatelessWidget {
         Icon(icon, color: Colors.white, size: 24.r),
         if (showBadge)
           Positioned(
-            right: -6.w,
-            top: -6.h,
-            child: Container(
+            right: -8.w,
+            top: -8.h,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              constraints: BoxConstraints(minWidth: 18.w),
               decoration: BoxDecoration(
-                color: Colors.redAccent,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.white, width: 1),
+                gradient: const LinearGradient(
+                  colors: [Color(0xffEF4444), Color(0xffDC2626)],
+                ),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: Colors.white, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Text(
                 count > 99 ? '99+' : count.toString(),
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 10.sp,
+                  fontSize: 9.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -91,4 +115,3 @@ class _NavItemWithBadge extends StatelessWidget {
     );
   }
 }
-

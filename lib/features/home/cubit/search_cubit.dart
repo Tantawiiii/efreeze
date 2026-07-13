@@ -6,10 +6,11 @@ import '../models/products_list_response_model.dart';
 part 'search_state.dart';
 
 class SearchCubit extends Cubit<SearchState> {
+  SearchCubit(this._productsService) : super(SearchInitial());
+
   final ProductsService _productsService;
   ProductsListResponseModel? _initialProducts;
-
-  SearchCubit(this._productsService) : super(SearchInitial());
+  CancelToken? _searchCancelToken;
 
   Future<void> loadInitialProducts() async {
     if (_initialProducts != null) {
@@ -34,7 +35,10 @@ class SearchCubit extends Cubit<SearchState> {
   }
 
   Future<void> search(String keyword) async {
-    if (keyword.trim().isEmpty) {
+    final trimmed = keyword.trim();
+    if (trimmed.isEmpty) {
+      _searchCancelToken?.cancel();
+      _searchCancelToken = null;
       if (_initialProducts != null) {
         emit(SearchSuccess(_initialProducts!));
       } else {
@@ -43,25 +47,32 @@ class SearchCubit extends Cubit<SearchState> {
       return;
     }
 
+    _searchCancelToken?.cancel();
+    _searchCancelToken = CancelToken();
+
     emit(SearchLoading());
     try {
-      final response = await _productsService.searchProducts(keyword.trim());
+      final response = await _productsService.searchProducts(
+        trimmed,
+        cancelToken: _searchCancelToken,
+      );
       emit(SearchSuccess(response));
     } catch (e) {
+      if (e is DioException && CancelToken.isCancel(e)) {
+        return;
+      }
+
       String errorMessage = 'Failed to search. Please try again.';
-      if (e is DioException) {
-        if (e.response != null) {
-          errorMessage = e.response?.statusMessage ?? errorMessage;
-        }
+      if (e is DioException && e.response != null) {
+        errorMessage = e.response?.statusMessage ?? errorMessage;
       }
       emit(SearchFailure(errorMessage));
     }
   }
+
+  @override
+  Future<void> close() {
+    _searchCancelToken?.cancel();
+    return super.close();
+  }
 }
-
-
-
-
-
-
-

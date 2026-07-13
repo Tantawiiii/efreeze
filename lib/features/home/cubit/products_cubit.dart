@@ -44,6 +44,8 @@ class ProductsCubit extends Cubit<ProductsState> {
         } else if (e.type == DioExceptionType.connectionError) {
           errorMessage = 'No internet connection. Please check your network.';
         }
+      } else {
+        errorMessage = e.toString();
       }
 
       emit(ProductsFailure(errorMessage));
@@ -80,6 +82,8 @@ class ProductsCubit extends Cubit<ProductsState> {
         } else if (e.type == DioExceptionType.connectionError) {
           errorMessage = 'No internet connection. Please check your network.';
         }
+      } else {
+        errorMessage = e.toString();
       }
 
       emit(ProductsFailure(errorMessage));

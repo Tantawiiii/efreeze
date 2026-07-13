@@ -7,6 +7,8 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/services/pick_avater.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/di/inject.dart' as di;
+import '../../../shared/widgets/app_snackbar.dart';
+import '../../../core/constant/app_texts.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../cubit/update_profile_cubit.dart';
@@ -57,9 +59,16 @@ class _UpdateProfileTabState extends State<UpdateProfileTab> {
   }
 
   Future<void> _pickAvatar(ImageSource source) async {
-    final File? file = await PickAvatarService.pickAvatar(source);
-    if (file != null) {
-      setState(() => _avatarFile = file);
+    final result = await PickAvatarService.pickAvatar(source);
+    if (!mounted) return;
+
+    switch (result.status) {
+      case AvatarPickStatus.success:
+        setState(() => _avatarFile = result.file);
+      case AvatarPickStatus.tooLarge:
+        AppSnackbar.error(context, AppTexts.avatarTooLarge);
+      case AvatarPickStatus.cancelled:
+        break;
     }
   }
 

@@ -30,23 +30,7 @@ class AnimatedListView extends StatelessWidget {
         physics: physics,
         itemCount: itemCount,
         separatorBuilder: (context, index) => separator!,
-        itemBuilder: (context, index) {
-          return TweenAnimationBuilder<double>(
-            duration: Duration(milliseconds: 300 + (index * 50)),
-            tween: Tween(begin: 0.0, end: 1.0),
-            curve: Curves.easeOut,
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(0, 20 * (1 - value)),
-                  child: child,
-                ),
-              );
-            },
-            child: itemBuilder(context, index),
-          );
-        },
+        itemBuilder: itemBuilder,
       );
     }
 
@@ -56,23 +40,7 @@ class AnimatedListView extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       physics: physics,
       itemCount: itemCount,
-      itemBuilder: (context, index) {
-        return TweenAnimationBuilder<double>(
-          duration: Duration(milliseconds: 300 + (index * 50)),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOut,
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 20 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: itemBuilder(context, index),
-        );
-      },
+      itemBuilder: itemBuilder,
     );
   }
 }
@@ -117,24 +85,7 @@ class AnimatedGridView extends StatelessWidget {
         childAspectRatio: childAspectRatio,
       ),
       itemCount: itemCount,
-      itemBuilder: (context, index) {
-        return TweenAnimationBuilder<double>(
-          duration: Duration(milliseconds: 300 + (index * 30)),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOut,
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.scale(
-                scale: 0.8 + (0.2 * value),
-                child: child,
-              ),
-            );
-          },
-          child: itemBuilder(context, index),
-        );
-      },
+      itemBuilder: itemBuilder,
     );
   }
 }
-

@@ -2,7 +2,7 @@ final class ApiConstants {
   ApiConstants._();
 
   // Base URL
-  static const String baseUrl = 'https://back.solunile.com';
+  static const String baseUrl = 'https://wsa-panel.wsa-elite.com';
 
   // API Endpoints
   static const String register = '/api/front/register';
@@ -18,11 +18,13 @@ final class ApiConstants {
   static const String updateProfile = '/api/front/update-profile';
   static const String contactUs = '/api/contacts';
   static const String checkAuth = '/api/front/check-auth';
-  
-  static String orderDetails(String orderNumber) => '/api/front/order/$orderNumber';
+  static const String searchCards = '/api/front/search-cards';
+
+  static String orderDetails(String orderNumber) =>
+      '/api/front/order/$orderNumber';
   static String deleteOrder(int orderId) => '/api/front/order/$orderId';
-  static String orderChangeStatus(int orderId) => '/api/orders/change-status/$orderId';
+  static String orderChangeStatus(int orderId) =>
+      '/api/orders/change-status/$orderId';
   static String orderById(int orderId) => '/api/orders/$orderId';
   static const String deleteAccount = '/api/user/delete';
 }
-

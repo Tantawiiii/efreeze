@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
+
 import '../../../core/constant/app_colors.dart';
+import '../../../core/theme/app_decorations.dart';
 
 class BrandShimmerLoading extends StatelessWidget {
   const BrandShimmerLoading({super.key});
@@ -9,32 +11,33 @@ class BrandShimmerLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 100.h,
-      child: ListView.builder(
+      height: 112.h,
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         itemCount: 5,
+        separatorBuilder: (_, __) => SizedBox(width: 12.w),
         itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(right: 16.w),
-            child: Shimmer.fromColors(
-              baseColor: AppColors.textFieldBorderColor,
-              highlightColor: AppColors.white,
-              period: const Duration(milliseconds: 1200),
+          return Shimmer.fromColors(
+            baseColor: AppColors.textFieldBorderColor,
+            highlightColor: AppColors.white,
+            period: const Duration(milliseconds: 1200),
+            child: SizedBox(
+              width: 76.w,
               child: Column(
                 children: [
                   Container(
-                    width: 70.w,
-                    height: 70.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      shape: BoxShape.circle,
+                    width: 76.w,
+                    height: 76.w,
+                    decoration: AppDecorations.card(
+                      radius: 16,
+                      elevated: false,
                     ),
                   ),
                   SizedBox(height: 8.h),
                   Container(
-                    width: 60.w,
-                    height: 12.h,
+                    width: 52.w,
+                    height: 10.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(6.r),
@@ -49,4 +52,3 @@ class BrandShimmerLoading extends StatelessWidget {
     );
   }
 }
-

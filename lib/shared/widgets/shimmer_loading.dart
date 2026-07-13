@@ -29,70 +29,88 @@ class ShimmerLoading extends StatelessWidget {
 }
 
 class ProductCardShimmer extends StatelessWidget {
-  const ProductCardShimmer({super.key});
+  final bool inGrid;
+
+  const ProductCardShimmer({super.key, this.inGrid = false});
 
   @override
   Widget build(BuildContext context) {
+    final imageHeight = inGrid ? 82.h : 96.h;
+    final contentPadding = inGrid ? 6.w : 8.w;
+    final actionHeight = inGrid ? 26.h : 28.h;
+
     return Container(
-      width: 200.w,
-      margin: EdgeInsets.only(right: 12.w),
+      width: inGrid ? double.infinity : 152.w,
+      margin: inGrid ? EdgeInsets.zero : EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: AppColors.textFieldBorderColor,
-          width: 1,
+          color: AppColors.textFieldBorderColor.withValues(alpha: 0.6),
+          width: 0.5,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           ShimmerLoading(
             child: Container(
               width: double.infinity,
-              height: 136.h,
+              height: imageHeight,
               decoration: BoxDecoration(
                 color: AppColors.textFieldBorderColor,
                 borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(12.r),
+                  top: Radius.circular(14.r),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.all(contentPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ShimmerLoading(
                   child: Container(
                     width: double.infinity,
-                    height: 16.h,
+                    height: 11.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                   ),
                 ),
                 SizedBox(height: 8.h),
                 ShimmerLoading(
                   child: Container(
-                    width: 100.w,
-                    height: 16.h,
+                    width: 70.w,
+                    height: 12.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                ShimmerLoading(
+                  child: Container(
+                    width: 50.w,
+                    height: 9.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                   ),
                 ),
                 SizedBox(height: 8.h),
                 ShimmerLoading(
                   child: Container(
-                    width: 80.w,
-                    height: 14.h,
+                    width: double.infinity,
+                    height: actionHeight,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
@@ -113,10 +131,10 @@ class ProductGridCardShimmer extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: AppColors.textFieldBorderColor,
-          width: 1,
+          color: AppColors.textFieldBorderColor.withValues(alpha: 0.6),
+          width: 0.5,
         ),
       ),
       child: Column(
@@ -125,24 +143,35 @@ class ProductGridCardShimmer extends StatelessWidget {
           ShimmerLoading(
             child: Container(
               width: double.infinity,
-              height: 138.h,
+              height: 110.h,
               decoration: BoxDecoration(
                 color: AppColors.textFieldBorderColor,
                 borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(12.r),
+                  top: Radius.circular(14.r),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(8.w),
+            padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 10.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ShimmerLoading(
                   child: Container(
                     width: double.infinity,
-                    height: 14.h,
+                    height: 11.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.textFieldBorderColor,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                ShimmerLoading(
+                  child: Container(
+                    width: 90.w,
+                    height: 13.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(4.r),
@@ -152,30 +181,8 @@ class ProductGridCardShimmer extends StatelessWidget {
                 SizedBox(height: 4.h),
                 ShimmerLoading(
                   child: Container(
-                    width: double.infinity,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                ShimmerLoading(
-                  child: Container(
-                    width: 100.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                ShimmerLoading(
-                  child: Container(
                     width: 60.w,
-                    height: 14.h,
+                    height: 10.h,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(4.r),

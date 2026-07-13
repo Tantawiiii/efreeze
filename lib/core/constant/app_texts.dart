@@ -183,6 +183,8 @@ final class AppTexts {
       _text('passwordMustBeAtLeast6Characters');
   static String get pleaseConfirmPassword => _text('pleaseConfirmPassword');
   static String get creating => _text('creating');
+  static String get avatarTooLarge => _text('avatarTooLarge');
+  static String get emailAlreadyRegistered => _text('emailAlreadyRegistered');
 
   static const Map<String, Map<AppLanguage, String>> _localizedValues = {
     'welcomeBack': {
@@ -635,6 +637,14 @@ final class AppTexts {
     'creating': {
       AppLanguage.en: 'Creating...',
       AppLanguage.ar: 'جارٍ الإنشاء...',
+    },
+    'avatarTooLarge': {
+      AppLanguage.en: 'Image is too large. Please choose a smaller photo (max 2 MB).',
+      AppLanguage.ar: 'الصورة كبيرة جداً. يرجى اختيار صورة أصغر (الحد الأقصى 2 ميجابايت).',
+    },
+    'emailAlreadyRegistered': {
+      AppLanguage.en: 'This email is already registered. Please log in instead.',
+      AppLanguage.ar: 'هذا البريد الإلكتروني مسجل مسبقاً. يرجى تسجيل الدخول.',
     },
   };
 }

@@ -7,10 +7,8 @@ import '../../../core/constant/app_colors.dart';
 import '../../../core/routing/app_routes.dart';
 import '../cubit/products_cubit.dart';
 import '../models/product_model.dart';
-import '../../cart/cubit/cart_cubit.dart';
-import '../../home/services/products_service.dart';
-import '../../../core/di/inject.dart' as di;
-import 'product_card.dart';
+import '../../../shared/widgets/section_header.dart';
+import 'product_model_card.dart';
 
 class ProductsSection extends StatefulWidget {
   final String title;
@@ -48,58 +46,54 @@ class _ProductsSectionState extends State<ProductsSection> {
       builder: (context, state) {
         List<ProductModel> products = [];
         bool isLoading = false;
+        String? errorMessage;
         if (state is ProductsLoading) {
           isLoading = true;
         } else if (state is ProductsSuccess) {
           products = state.response.data;
+        } else if (state is ProductsFailure) {
+          errorMessage = state.message;
         }
         final displayProducts = products.take(5).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.title,
-                    style: TextStyle(
-                      color: AppColors.blackTextColor,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (widget.showSeeAll && !isLoading)
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.allProducts,
-                          arguments: {
-                            'title': widget.title,
-                            'isBestProducts': widget.isBestProducts,
-                          },
-                        );
-                      },
-                      child: Text(
-                        AppTexts.seeAll,
-                        style: TextStyle(
-                          color: AppColors.primaryColor,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            SectionHeader(
+              title: widget.title,
+              actionLabel: widget.showSeeAll && !isLoading ? AppTexts.seeAll : null,
+              onActionTap: widget.showSeeAll && !isLoading
+                  ? () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.allProducts,
+                        arguments: {
+                          'title': widget.title,
+                          'isBestProducts': widget.isBestProducts,
+                        },
+                      );
+                    }
+                  : null,
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
             SizedBox(
-              height: 300.h,
+              height: 198.h,
               child: isLoading
                   ? _buildLoadingShimmer()
+                  : errorMessage != null
+                  ? Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24.w),
+                        child: Text(
+                          errorMessage,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.greyTextColor,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ),
+                    )
                   : displayProducts.isEmpty
                   ? Center(
                       child: Text(
@@ -112,67 +106,14 @@ class _ProductsSectionState extends State<ProductsSection> {
                     )
                   : ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      padding: EdgeInsetsDirectional.only(
+                        start: 20.w,
+                        end: 8.w,
+                      ),
                       itemCount: displayProducts.length,
                       itemBuilder: (context, index) {
                         final product = displayProducts[index];
-                        return BlocBuilder<CartCubit, CartState>(
-                          builder: (context, cartState) {
-                            int cartQuantity = 0;
-                            if (cartState is CartSuccess) {
-                              try {
-                                final cartItem = cartState.response.data
-                                    .firstWhere(
-                                      (item) => item.cardId == product.id,
-                                    );
-                                cartQuantity = cartItem.quantity;
-                              } catch (e) {
-                                cartQuantity = 0;
-                              }
-                            }
-
-                            return ProductCard(
-                              productId: product.id,
-                              title: product.name,
-                              description: product.shortDescription,
-                              currentPrice:
-                                  '${product.price} ${product.currency}',
-                              originalPrice:
-                                  '${product.oldPrice} ${product.currency}',
-                              discount: '${product.discount}%',
-                              rating: product.averageRating,
-                              reviewCount: product.reviewsCount,
-                              imageUrl: product.image,
-                              cartQuantity: cartQuantity > 0
-                                  ? cartQuantity
-                                  : null,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.productDetails,
-                                  arguments: {'productId': product.id},
-                                );
-                              },
-                              onFavoriteTap:
-                                  null, // FavoriteButton will handle this internally
-                              onAddToCart: cartQuantity > 0
-                                  ? null
-                                  : () {
-                                      _addToCart(context, product.id);
-                                    },
-                              onRemoveFromCart: cartQuantity > 0
-                                  ? () {
-                                      _updateCart(context, product.id, 'minus');
-                                    }
-                                  : null,
-                              onIncreaseQuantity: cartQuantity > 0
-                                  ? () {
-                                      _updateCart(context, product.id, 'plus');
-                                    }
-                                  : null,
-                            );
-                          },
-                        );
+                        return ProductModelCard(product: product);
                       },
                     ),
             ),
@@ -185,7 +126,7 @@ class _ProductsSectionState extends State<ProductsSection> {
   Widget _buildLoadingShimmer() {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsetsDirectional.only(start: 20.w, end: 8.w),
       itemCount: 3,
       itemBuilder: (context, index) {
         return Padding(
@@ -195,80 +136,57 @@ class _ProductsSectionState extends State<ProductsSection> {
             highlightColor: AppColors.white,
             period: const Duration(milliseconds: 1200),
             child: Container(
-              width: 230.w,
+              width: 152.w,
+              height: double.infinity,
               decoration: BoxDecoration(
                 color: AppColors.overlayColor,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              padding: EdgeInsets.all(12.w),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    height: 150.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Container(
-                    width: 160.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Container(
-                    width: 120.w,
-                    height: 12.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Row(
-                    children: [
-                      Container(
-                        width: 80.w,
-                        height: 16.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.textFieldBorderColor,
-                          borderRadius: BorderRadius.circular(8.r),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBorderColor,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(14.r),
                         ),
                       ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Container(
-                          height: 16.h,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(6.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120.w,
+                          height: 11.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.textFieldBorderColor,
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Container(
+                          width: 70.w,
+                          height: 12.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.textFieldBorderColor,
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Container(
+                          width: double.infinity,
+                          height: 24.h,
                           decoration: BoxDecoration(
                             color: AppColors.textFieldBorderColor,
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10.h),
-                  Row(
-                    children: List.generate(
-                      3,
-                      (buttonIndex) => Expanded(
-                        child: Container(
-                          height: 28.h,
-                          margin: EdgeInsets.only(
-                            right: buttonIndex == 2 ? 0 : 8.w,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.textFieldBorderColor,
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -278,43 +196,5 @@ class _ProductsSectionState extends State<ProductsSection> {
         );
       },
     );
-  }
-
-  void _addToCart(BuildContext context, int productId) async {
-    final productsService = di.sl<ProductsService>();
-    try {
-      await productsService.addToCart(productId: productId, method: 'add');
-      if (context.mounted) {
-        context.read<CartCubit>().getCart();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add to cart: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _updateCart(BuildContext context, int productId, String method) async {
-    final productsService = di.sl<ProductsService>();
-    try {
-      await productsService.addToCart(productId: productId, method: method);
-      if (context.mounted) {
-        context.read<CartCubit>().getCart();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update cart: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 }

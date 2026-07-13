@@ -77,6 +77,18 @@ class ProductModel {
       required this.oneYearWarranty,
   });
 
+  static String _asString(dynamic value, [String fallback = '']) {
+    if (value == null) return fallback;
+    if (value is String) return value;
+    if (value is List) {
+      return value
+          .map((item) => item?.toString() ?? '')
+          .where((item) => item.isNotEmpty)
+          .join(', ');
+    }
+    return value.toString();
+  }
+
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'] as int,
@@ -84,9 +96,9 @@ class ProductModel {
       slug: json['slug'] as String,
       description: json['description'] as String,
       shortDescription: json['short_description'] as String,
-      oldPrice: json['old_price'] as String,
-      discount: json['discount'] as String,
-      price: json['price'] as String,
+      oldPrice: _asString(json['old_price']),
+      discount: _asString(json['discount']),
+      price: _asString(json['price']),
       currency: json['currency'] as String,
       quantity: json['quantity'] as int,
       linkVideo: json['link_video'] as String?,
@@ -110,7 +122,7 @@ class ProductModel {
       timeInEar: json['time_in_ear'] as String? ?? '',
       endCuring: json['end_curing'] as String? ?? '',
       viscosity: json['viscosity'] as String? ?? '',
-      color: json['color'] as String? ?? '',
+      color: _asString(json['color']),
       packaging: json['packaging'] as String? ?? '',
       itemNumber: json['item_number'] as String? ?? '',
       mixGun: json['mix_gun'] as String? ?? '',
@@ -123,6 +135,18 @@ class ProductModel {
       freeDelivery: json['free_delevery'] as bool? ?? false,
       oneYearWarranty: json['one_year_warranty'] as bool? ?? false,
     );
+  }
+
+  /// Primary image URL, falling back to the first gallery image when [image] is null.
+  String? get displayImage {
+    if (image != null && image!.trim().isNotEmpty) {
+      return image;
+    }
+    if (gallery.isEmpty) return null;
+    final first = gallery.first;
+    if (first == null) return null;
+    final url = first.toString().trim();
+    return url.isEmpty ? null : url;
   }
 
   Map<String, dynamic> toJson() {
