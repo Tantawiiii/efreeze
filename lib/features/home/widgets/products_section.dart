@@ -137,25 +137,26 @@ class _ProductsSectionState extends State<ProductsSection> {
             period: const Duration(milliseconds: 1200),
             child: Container(
               width: 152.w,
+              height: double.infinity,
               decoration: BoxDecoration(
                 color: AppColors.overlayColor,
                 borderRadius: BorderRadius.circular(14.r),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    height: 96.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldBorderColor,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(14.r),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBorderColor,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(14.r),
+                        ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(8.w),
+                    padding: EdgeInsets.all(6.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -167,7 +168,7 @@ class _ProductsSectionState extends State<ProductsSection> {
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Container(
                           width: 70.w,
                           height: 12.h,
@@ -176,19 +177,10 @@ class _ProductsSectionState extends State<ProductsSection> {
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        Container(
-                          width: 50.w,
-                          height: 9.h,
-                          decoration: BoxDecoration(
-                            color: AppColors.textFieldBorderColor,
-                            borderRadius: BorderRadius.circular(6.r),
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Container(
                           width: double.infinity,
-                          height: 28.h,
+                          height: 24.h,
                           decoration: BoxDecoration(
                             color: AppColors.textFieldBorderColor,
                             borderRadius: BorderRadius.circular(8.r),

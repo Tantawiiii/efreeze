@@ -76,7 +76,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 10.w,
                 mainAxisSpacing: 12.h,
-                childAspectRatio: 0.68,
+                childAspectRatio: 0.62,
                 itemCount: 6,
                 itemBuilder: (context, index) {
                   return const ProductCardShimmer(inGrid: true);
@@ -156,7 +156,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 10.w,
                   mainAxisSpacing: 12.h,
-                  childAspectRatio: 0.68,
+                  childAspectRatio: 0.62,
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: products.length,
                   itemBuilder: (context, index) {

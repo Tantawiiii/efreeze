@@ -133,7 +133,7 @@ class _CartScreenState extends State<CartScreen>
                       );
                     },
                   ),
-                  SizedBox(height: 80.h),
+                  SizedBox(height: 20.h),
                 ],
               );
             }

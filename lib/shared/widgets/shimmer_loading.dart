@@ -35,6 +35,10 @@ class ProductCardShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageHeight = inGrid ? 82.h : 96.h;
+    final contentPadding = inGrid ? 6.w : 8.w;
+    final actionHeight = inGrid ? 26.h : 28.h;
+
     return Container(
       width: inGrid ? double.infinity : 152.w,
       margin: inGrid ? EdgeInsets.zero : EdgeInsets.only(right: 12.w),
@@ -53,7 +57,7 @@ class ProductCardShimmer extends StatelessWidget {
           ShimmerLoading(
             child: Container(
               width: double.infinity,
-              height: 96.h,
+              height: imageHeight,
               decoration: BoxDecoration(
                 color: AppColors.textFieldBorderColor,
                 borderRadius: BorderRadius.vertical(
@@ -63,7 +67,7 @@ class ProductCardShimmer extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(8.w),
+            padding: EdgeInsets.all(contentPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -103,7 +107,7 @@ class ProductCardShimmer extends StatelessWidget {
                 ShimmerLoading(
                   child: Container(
                     width: double.infinity,
-                    height: 28.h,
+                    height: actionHeight,
                     decoration: BoxDecoration(
                       color: AppColors.textFieldBorderColor,
                       borderRadius: BorderRadius.circular(8.r),

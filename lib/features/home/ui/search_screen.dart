@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
+import '../../../core/ui/app_shell.dart';
 import '../../../core/di/inject.dart' as di;
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/animated_list_view.dart';
@@ -54,6 +55,11 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  EdgeInsets _gridPadding(BuildContext context) {
+    final bottomInset = AppShell.bottomOverlayOf(context);
+    return EdgeInsets.fromLTRB(12.w, 12.w, 12.w, 12.w + bottomInset + 20.h);
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<LanguageCubit>();
@@ -63,7 +69,7 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: AppColors.whiteBackground,
         appBar: AppBar(title: Text(AppTexts.search)),
         body: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(12.w),
           child: Column(
             children: [
               TextField(
@@ -120,11 +126,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     if (state is SearchLoading) {
                       return AnimatedGridView.builder(
-                        padding: EdgeInsets.all(14.w),
+                        padding: _gridPadding(context),
                         crossAxisCount: 2,
                         crossAxisSpacing: 10.w,
                         mainAxisSpacing: 12.h,
-                        childAspectRatio: 0.68,
+                        childAspectRatio: 0.62,
                         itemCount: 6,
                         itemBuilder: (context, index) {
                           return const ProductCardShimmer(inGrid: true);
@@ -160,10 +166,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     return AnimatedGridView.builder(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 10.w,
-                      mainAxisSpacing: 12.h,
-                      childAspectRatio: 0.68,
-                      padding: EdgeInsets.all(12.w),
+                      crossAxisSpacing: 8.w,
+                      mainAxisSpacing: 10.h,
+                      childAspectRatio: 0.62,
+                      padding: _gridPadding(context),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         return ProductModelCard(

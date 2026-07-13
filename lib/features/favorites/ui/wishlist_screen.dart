@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constant/app_colors.dart';
 import '../../../core/constant/app_texts.dart';
 import '../../../core/localization/language_cubit.dart';
+import '../../../core/ui/app_shell.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -37,6 +38,11 @@ class _WishlistScreenState extends State<WishlistScreen>
   }
 
 
+  EdgeInsets _gridPadding(BuildContext context) {
+    final bottomInset = AppShell.bottomOverlayOf(context);
+    return EdgeInsets.fromLTRB(12.w, 12.w, 12.w, 12.w + bottomInset + 20.h);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -45,12 +51,10 @@ class _WishlistScreenState extends State<WishlistScreen>
       listener: (context, state) {
         if (state is ToggleFavoriteSuccess) {
           AppSnackbar.success(context, state.response.message);
-          // Refresh favorites after toggling
           context.read<FavoritesCubit>().getFavorites();
         } else if (state is ToggleFavoriteFailure) {
           AppSnackbar.error(context, state.message);
         }
-        // Auto-refresh when coming back to this screen
         if (state is FavoritesInitial) {
           context.read<FavoritesCubit>().getFavorites();
         }
@@ -65,11 +69,11 @@ class _WishlistScreenState extends State<WishlistScreen>
           builder: (context, state) {
             if (state is FavoritesLoading) {
               return AnimatedGridView.builder(
-                padding: EdgeInsets.all(12.w),
+                padding: _gridPadding(context),
                 crossAxisCount: 2,
                 crossAxisSpacing: 10.w,
                 mainAxisSpacing: 12.h,
-                childAspectRatio: 0.68,
+                childAspectRatio: 0.62,
                 itemCount: 6,
                 itemBuilder: (context, index) {
                   return const ProductCardShimmer(inGrid: true);
@@ -106,11 +110,11 @@ class _WishlistScreenState extends State<WishlistScreen>
                   );
                 },
                 child: AnimatedGridView.builder(
-                  padding: EdgeInsets.all(12.w),
+                  padding: _gridPadding(context),
                   crossAxisCount: 2,
                   crossAxisSpacing: 10.w,
                   mainAxisSpacing: 12.h,
-                  childAspectRatio: 0.68,
+                  childAspectRatio: 0.62,
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: favorites.length,
                   itemBuilder: (context, index) {

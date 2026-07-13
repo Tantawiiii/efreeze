@@ -35,17 +35,11 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
   }
 
@@ -92,20 +86,14 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(height: 24.h),
-                        Container(
-                          padding: EdgeInsets.all(20.w),
-                          decoration: BoxDecoration(
-                            color: AppColors.overlayColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Image.asset(
-                            AppAssets.appLogoHeaderImg,
-                            height: 64.h,
-                            fit: BoxFit.contain,
-                          ),
+                        SizedBox(height: 12.h),
+                        Image.asset(
+                          AppAssets.appLogoHeaderImg,
+                          height: 160.h,
+                          fit: BoxFit.contain,
                         ),
-                        SizedBox(height: 28.h),
+
+                        SizedBox(height: 8.h),
                         Text(
                           AppTexts.welcomeBack,
                           style: Theme.of(context).textTheme.headlineMedium,
@@ -156,8 +144,9 @@ class _LoginScreenState extends State<LoginScreen>
                               icon: Icons.login_rounded,
                               onPressed: isLoading
                                   ? null
-                                  : () =>
-                                      _handleLogin(context.read<LoginCubit>()),
+                                  : () => _handleLogin(
+                                      context.read<LoginCubit>(),
+                                    ),
                             );
                           },
                         ),
@@ -170,8 +159,9 @@ class _LoginScreenState extends State<LoginScreen>
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             TextButton(
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed(AppRoutes.signup),
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.signup),
                               child: Text(
                                 AppTexts.signUp,
                                 style: TextStyle(

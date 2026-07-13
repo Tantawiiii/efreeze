@@ -54,7 +54,7 @@ class HomeHeader extends StatelessWidget {
               SizedBox(width: 8.w),
               Image.asset(
                 AppAssets.appLogoHeaderImg,
-                height: 32.h,
+                height: 82.h,
                 fit: BoxFit.contain,
               ),
             ],

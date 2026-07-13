@@ -49,184 +49,197 @@ class ProductCard extends StatelessWidget {
   bool get _hasDiscount =>
       discount.isNotEmpty && discount != '0%' && discount != '0';
 
+  EdgeInsets get _contentPadding => EdgeInsets.fromLTRB(6.w, 5.h, 6.w, 6.h);
+
+  double get _sectionGap => 3.h;
+
+  double get _actionHeight => 24.h;
+
+  double get _titleSize => 10.5.sp;
+
+  double get _priceSize => 11.5.sp;
+
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: inGrid ? double.infinity : 152.w,
-          margin: inGrid
-              ? EdgeInsets.zero
-              : EdgeInsetsDirectional.only(end: 12.w),
-          decoration: AppDecorations.card(radius: 14),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildImageSection(),
-              Padding(
-                padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 8.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: AppColors.blackTextColor,
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 6.h),
-                  _buildPriceBlock(),
-                  if (reviewCount > 0 || rating > 0) ...[
-                    SizedBox(height: 4.h),
-                    _buildRatingChip(),
-                  ],
-                  if (onAddToCart != null ||
-                      (cartQuantity != null && cartQuantity! > 0)) ...[
-                    SizedBox(height: 6.h),
-                    _buildCartAction(),
-                  ],
-                  ],
-                ),
-              ),
-            ],
-          ),
+    final card = GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: inGrid ? double.infinity : 152.w,
+        height: double.infinity,
+        margin: inGrid
+            ? EdgeInsets.zero
+            : EdgeInsetsDirectional.only(end: 12.w),
+        decoration: AppDecorations.card(radius: 14),
+        clipBehavior: Clip.antiAlias,
+        child: _buildFlexLayout(),
+      ),
+    );
+
+    if (inGrid) {
+      return card;
+    }
+
+    return Align(alignment: Alignment.topCenter, child: card);
+  }
+
+  Widget _buildFlexLayout() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _buildImageSection()),
+        Padding(
+          padding: _contentPadding,
+          child: _buildDetailsSection(),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildImageSection() {
-    return SizedBox(
-      height: 96.h,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ColoredBox(
-            color: AppColors.overlayColor,
-            child: imageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: imageUrl!,
-                    fit: BoxFit.contain,
-                    placeholder: (_, __) => Center(
-                      child: SizedBox(
-                        width: 18.w,
-                        height: 18.w,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primaryColor.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, __, ___) => _buildPlaceholder(),
-                  )
-                : _buildPlaceholder(),
-          ),
-          if (_hasDiscount)
-            PositionedDirectional(
-              top: 6.h,
-              start: 6.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: AppColors.discountColor,
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-                  discount.contains('%') ? discount : '$discount%',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 9.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          if (productId != null)
-            PositionedDirectional(
-              top: 4.h,
-              end: 4.w,
-              child: FavoriteButton(
-                productId: productId!,
-                onTap: onFavoriteTap,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceBlock() {
+  Widget _buildDetailsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          currentPrice,
+          title,
           style: TextStyle(
-            color: AppColors.primaryColor,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w800,
-            height: 1.1,
+            color: AppColors.blackTextColor,
+            fontSize: _titleSize,
+            fontWeight: FontWeight.w600,
+            height: 1.15,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (originalPrice.isNotEmpty &&
-            originalPrice != currentPrice &&
-            _hasDiscount) ...[
-          SizedBox(height: 1.h),
-          Text(
-            originalPrice,
-            style: TextStyle(
-              color: AppColors.lightGreyText,
-              fontSize: 9.5.sp,
-              decoration: TextDecoration.lineThrough,
-              height: 1.1,
+        SizedBox(height: _sectionGap),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                currentPrice,
+                style: TextStyle(
+                  color: AppColors.primaryColor,
+                  fontSize: _priceSize,
+                  fontWeight: FontWeight.w800,
+                  height: 1.05,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+            SizedBox(width: 4.w),
+            _buildCompactRating(),
+          ],
+        ),
+        if (onAddToCart != null || (cartQuantity != null && cartQuantity! > 0)) ...[
+          SizedBox(height: _sectionGap),
+          _buildCartAction(),
         ],
       ],
     );
   }
 
-  Widget _buildRatingChip() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.star_rounded, color: Colors.amber.shade600, size: 11.sp),
-        SizedBox(width: 2.w),
-        Text(
-          rating.toStringAsFixed(1),
-          style: TextStyle(
-            color: AppColors.greyTextColor,
-            fontSize: 10.sp,
-            fontWeight: FontWeight.w600,
+  Widget _buildCompactRating() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: AppColors.overlayColor,
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.star_rounded,
+            color: Colors.amber.shade600,
+            size: 10.sp,
           ),
-        ),
-        if (reviewCount > 0) ...[
           SizedBox(width: 2.w),
           Text(
-            '($reviewCount)',
+            rating.toStringAsFixed(1),
             style: TextStyle(
-              color: AppColors.lightGreyText,
-              fontSize: 9.5.sp,
+              color: AppColors.blackTextColor,
+              fontSize: 9.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
+          if (reviewCount > 0) ...[
+            SizedBox(width: 2.w),
+            Text(
+              '($reviewCount)',
+              style: TextStyle(
+                color: AppColors.lightGreyText,
+                fontSize: 8.5.sp,
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildImageSection({double? height}) {
+    final image = Stack(
+      fit: StackFit.expand,
+      children: [
+        ColoredBox(
+          color: AppColors.overlayColor,
+          child: imageUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl!,
+                  fit: BoxFit.contain,
+                  placeholder: (_, __) => Center(
+                    child: SizedBox(
+                      width: 18.w,
+                      height: 18.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primaryColor.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => _buildPlaceholder(),
+                )
+              : _buildPlaceholder(),
+        ),
+        if (_hasDiscount)
+          PositionedDirectional(
+            top: 6.h,
+            start: 6.w,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: AppColors.discountColor,
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                discount.contains('%') ? discount : '$discount%',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 9.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        if (productId != null)
+          PositionedDirectional(
+            top: 4.h,
+            end: 4.w,
+            child: FavoriteButton(
+              productId: productId!,
+              onTap: onFavoriteTap,
+            ),
+          ),
       ],
     );
+
+    if (height != null) {
+      return SizedBox(height: height, child: image);
+    }
+
+    return image;
   }
 
   Widget _buildCartAction() {
@@ -247,7 +260,7 @@ class ProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.r),
         child: Ink(
           width: double.infinity,
-          height: 28.h,
+          height: _actionHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
@@ -259,18 +272,20 @@ class ProductCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.add_shopping_cart_outlined,
-                size: 14.sp,
+                size: 13.sp,
                 color: AppColors.primaryColor,
               ),
               SizedBox(width: 4.w),
-              Text(
-                AppTexts.addToCart,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  AppTexts.addToCart,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.primaryColor,
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -283,7 +298,7 @@ class ProductCard extends StatelessWidget {
   Widget _buildQuantityControl() {
     return Container(
       width: double.infinity,
-      height: 28.h,
+      height: _actionHeight,
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.r),
@@ -296,12 +311,12 @@ class ProductCard extends StatelessWidget {
         children: [
           _qtyButton(Icons.remove_rounded, onRemoveFromCart, filled: false),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.w),
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
             child: Text(
               cartQuantity.toString(),
               style: TextStyle(
                 color: AppColors.primaryColor,
-                fontSize: 12.sp,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -317,18 +332,19 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _qtyButton(IconData icon, VoidCallback? onTap, {required bool filled}) {
+    final size = 22.w;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 24.w,
-        height: 24.w,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: filled ? AppColors.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(7.r),
         ),
         child: Icon(
           icon,
-          size: 14.sp,
+          size: 13.sp,
           color: filled ? AppColors.white : AppColors.primaryColor,
         ),
       ),
