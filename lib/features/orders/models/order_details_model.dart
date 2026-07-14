@@ -39,31 +39,41 @@ class OrderDetailsModel {
     this.deletedAt,
   });
 
+  static List<OrderCardItemModel> _parseCards(Map<String, dynamic> json) {
+    final rawCards = json['cards'] as List<dynamic>?;
+    final rawOrders = json['orders'] as List<dynamic>?;
+    final source = (rawCards != null && rawCards.isNotEmpty)
+        ? rawCards
+        : (rawOrders ?? const <dynamic>[]);
+
+    return source
+        .whereType<Map>()
+        .map(
+          (item) => OrderCardItemModel.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
+        .toList();
+  }
+
   factory OrderDetailsModel.fromJson(Map<String, dynamic> json) {
     return OrderDetailsModel(
       id: json['id'] as int,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      orderNumber: json['order_number'] as String,
-      phone: json['phone'] as String,
-      addressLine: json['address_line'] as String,
-      city: json['city'] as String,
-      state: json['state'] as String,
-      status: json['status'] as String,
-      zipCode: json['zip_code'] as String,
-      paymentMethod: json['payment_method'] as String,
-      paymentStatus: json['payment_status'] as String,
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      orderNumber: json['order_number'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      addressLine: json['address_line'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      state: json['state'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      zipCode: json['zip_code']?.toString() ?? '',
+      paymentMethod: json['payment_method'] as String? ?? '',
+      paymentStatus: json['payment_status']?.toString() ?? '',
       promoCode: json['promo_code'] as String?,
-      cards:
-          (json['cards'] as List<dynamic>?)
-              ?.map(
-                (item) =>
-                    OrderCardItemModel.fromJson(item as Map<String, dynamic>),
-              )
-              .toList() ??
-          [],
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      cards: _parseCards(json),
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
       deletedAt: json['deletedAt'] as String?,
     );
   }

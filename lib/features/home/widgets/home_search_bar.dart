@@ -12,7 +12,7 @@ class HomeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+      padding: EdgeInsets.fromLTRB(16.w, 6.h, 16.w, 6.h),
       child: GestureDetector(
         onTap: onTap,
         child: Container(

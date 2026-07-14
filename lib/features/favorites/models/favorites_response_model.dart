@@ -14,15 +14,26 @@ class FavoritesResponseModel {
   });
 
   factory FavoritesResponseModel.fromJson(Map<String, dynamic> json) {
+    final items = (json['data'] as List<dynamic>?)
+            ?.map(
+              (item) => FavoriteItemModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList() ??
+        <FavoriteItemModel>[];
+
+    final seen = <int>{};
+    final deduped = <FavoriteItemModel>[];
+    for (final item in items.reversed) {
+      if (seen.add(item.card.id)) {
+        deduped.add(item);
+      }
+    }
+
     return FavoritesResponseModel(
-      result: json['result'] as String,
-      data: (json['data'] as List<dynamic>?)
-              ?.map((item) =>
-                  FavoriteItemModel.fromJson(item as Map<String, dynamic>))
-              .toList() ??
-          [],
-      message: json['message'] as String,
-      status: json['status'] as int,
+      result: json['result'] as String? ?? '',
+      data: deduped.reversed.toList(),
+      message: json['message'] as String? ?? '',
+      status: json['status'] as int? ?? 0,
     );
   }
 

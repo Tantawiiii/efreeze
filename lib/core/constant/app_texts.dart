@@ -111,6 +111,9 @@ final class AppTexts {
   static String get noResultsFound => _text('noResultsFound');
   static String get wishlist => _text('wishlist');
   static String get retry => _text('retry');
+  static String get noInternetTitle => _text('noInternetTitle');
+  static String get noInternetSubtitle => _text('noInternetSubtitle');
+  static String get retryConnection => _text('retryConnection');
   static String get wishlistEmpty => _text('wishlistEmpty');
   static String get addItemsToWishlist => _text('addItemsToWishlist');
   static String get addReview => _text('addReview');
@@ -423,6 +426,20 @@ final class AppTexts {
     },
     'wishlist': {AppLanguage.en: 'Wishlist', AppLanguage.ar: 'المفضلة'},
     'retry': {AppLanguage.en: 'Retry', AppLanguage.ar: 'إعادة المحاولة'},
+    'noInternetTitle': {
+      AppLanguage.en: 'No Internet Connection',
+      AppLanguage.ar: 'لا يوجد اتصال بالإنترنت',
+    },
+    'noInternetSubtitle': {
+      AppLanguage.en:
+          'Please check your connection and try again to continue using the app.',
+      AppLanguage.ar:
+          'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى لمتابعة استخدام التطبيق.',
+    },
+    'retryConnection': {
+      AppLanguage.en: 'Try Again',
+      AppLanguage.ar: 'حاول مرة أخرى',
+    },
     'wishlistEmpty': {
       AppLanguage.en: 'Your wishlist is empty',
       AppLanguage.ar: 'قائمة المفضلة فارغة',

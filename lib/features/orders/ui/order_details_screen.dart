@@ -278,13 +278,16 @@ class OrderDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildOrderItemCard(OrderCardItemModel cardItem) {
-    final itemName = cardItem.card.name;
-    final itemPrice = cardItem.card.price;
-    final currency = cardItem.card.currency;
+    final product = cardItem.card;
+    final itemName = product?.name ?? '${AppTexts.productDetails} #${cardItem.cardId}';
+    final itemPrice = product?.price ?? '—';
+    final currency = product?.currency ?? '';
     final quantity = cardItem.qty;
-    final itemImage = cardItem.card.image;
+    final itemImage = product?.displayImage ?? product?.image;
+    final color = cardItem.color;
 
-    final totalPrice = (double.tryParse(itemPrice) ?? 0) * quantity;
+    final parsedPrice = double.tryParse(itemPrice) ?? 0;
+    final totalPrice = parsedPrice * quantity;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -348,25 +351,39 @@ class OrderDetailsScreen extends StatelessWidget {
                         color: AppColors.greyTextColor,
                       ),
                     ),
-                    SizedBox(width: 16.w),
-                    Text(
-                      '$itemPrice $currency',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppColors.greyTextColor,
+                    if (product != null) ...[
+                      SizedBox(width: 16.w),
+                      Text(
+                        '$itemPrice $currency',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: AppColors.greyTextColor,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  '${AppTexts.total}: ${totalPrice.toStringAsFixed(2)} $currency',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryColor,
+                if (color != null && color.isNotEmpty) ...[
+                  SizedBox(height: 6.h),
+                  Text(
+                    color,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.greyTextColor,
+                    ),
                   ),
-                ),
+                ],
+                if (product != null) ...[
+                  SizedBox(height: 8.h),
+                  Text(
+                    '${AppTexts.total}: ${totalPrice.toStringAsFixed(2)} $currency',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

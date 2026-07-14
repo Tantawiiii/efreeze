@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/constant/app_texts.dart';
+import 'core/connectivity/connectivity_cubit.dart';
 import 'core/di/inject.dart' as di;
 import 'core/localization/app_language.dart';
 import 'core/localization/language_cubit.dart';
@@ -13,6 +16,7 @@ import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'shared/widgets/app_connectivity_gate.dart';
 
 // Global navigator key for showing dialogs from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -45,6 +49,9 @@ void main() async {
     dioClient.setAuthToken(token);
   }
 
+  // Start global connectivity monitoring once.
+  unawaited(di.sl<ConnectivityCubit>().start());
+
   runApp(const MyApp());
 }
 
@@ -57,8 +64,12 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       builder: (context, child) {
         final languageCubit = di.sl<LanguageCubit>();
-        return BlocProvider.value(
-          value: languageCubit,
+        final connectivityCubit = di.sl<ConnectivityCubit>();
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: languageCubit),
+            BlocProvider.value(value: connectivityCubit),
+          ],
           child: BlocBuilder<LanguageCubit, Locale>(
             builder: (context, locale) {
               AppTexts.updateLocale(locale);
@@ -87,6 +98,11 @@ class MyApp extends StatelessWidget {
                   ],
                   onGenerateRoute: onGenerateAppRoute,
                   initialRoute: AppRoutes.splash,
+                  builder: (context, child) {
+                    return AppConnectivityGate(
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
                 ),
               );
             },

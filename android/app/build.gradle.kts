@@ -17,7 +17,7 @@ plugins {
 
 android {
     namespace = "com.tantawii.efreeze.efreeze"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -55,6 +55,15 @@ android {
         release {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
+    }
+}
+
+// Keep minSdk 21 device support: connectivity_plus pulls androidx.core 1.18
+// which requires minSdk 23. Pin a compatible version instead.
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core:1.15.0")
+        force("androidx.core:core-ktx:1.15.0")
     }
 }
 

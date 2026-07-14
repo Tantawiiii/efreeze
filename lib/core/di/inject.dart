@@ -6,6 +6,7 @@ import '../network/dio_client.dart';
 import '../network/api_service.dart';
 import '../services/storage_service.dart';
 import '../localization/language_cubit.dart';
+import '../connectivity/connectivity_cubit.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/auth/cubit/signup_cubit.dart';
 import '../../features/auth/cubit/login_cubit.dart';
@@ -65,6 +66,9 @@ Future<void> init() async {
 
   // Localization Cubit
   sl.registerLazySingleton(() => LanguageCubit(sl<StorageService>()));
+
+  // Connectivity Cubit
+  sl.registerLazySingleton(() => ConnectivityCubit());
 
   // Auth Cubits
   sl.registerFactory(() => SignupCubit(sl<AuthService>()));
