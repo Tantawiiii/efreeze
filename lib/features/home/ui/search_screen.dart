@@ -71,6 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
         body: Padding(
           padding: EdgeInsets.all(12.w),
           child: Column(
+
             children: [
               TextField(
                 controller: _controller,

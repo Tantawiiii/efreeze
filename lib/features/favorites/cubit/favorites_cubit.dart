@@ -3,159 +3,202 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../../home/services/products_service.dart';
 import '../models/favorites_response_model.dart';
-import '../models/add_favorite_response_model.dart';
 import '../models/favorite_item_model.dart';
 
 part 'favorites_state.dart';
 
 class FavoritesCubit extends Cubit<FavoritesState> {
   final ProductsService _productsService;
+  final Set<int> _inFlightToggles = {};
 
   FavoritesCubit(this._productsService) : super(FavoritesInitial());
 
-  /// Get all favorites
+  static List<FavoriteItemModel> _dedupeFavorites(
+    List<FavoriteItemModel> items,
+  ) {
+    final seen = <int>{};
+    final deduped = <FavoriteItemModel>[];
+
+    for (final item in items.reversed) {
+      final cardId = item.card.id;
+      if (seen.add(cardId)) {
+        deduped.add(item);
+      }
+    }
+
+    return deduped.reversed.toList();
+  }
+
+  static Set<int> _idsFrom(List<FavoriteItemModel> items) {
+    return items.map((item) => item.card.id).toSet();
+  }
+
   Future<void> getFavorites({bool forceRefresh = false}) async {
-    // Don't reload if we already have data unless force refresh
-    if (!forceRefresh && state is FavoritesSuccess) {
+    if (isClosed) return;
+
+    final hasData = state is FavoritesSuccess;
+    if (!forceRefresh && hasData) {
       return;
     }
 
-    // Check if cubit is closed before emitting
-    if (isClosed) return;
-
-    emit(FavoritesLoading());
+    // Keep current favorites visible while refreshing to avoid icon flicker.
+    if (!hasData) {
+      emit(FavoritesLoading());
+    }
 
     try {
       final response = await _productsService.getFavorites();
-
       if (isClosed) return;
-      emit(FavoritesSuccess(response));
-    } catch (e) {
-      String errorMessage = 'An error occurred. Please try again.';
 
-      if (e is DioException) {
-        if (e.response != null) {
-          final errorData = e.response?.data;
-          if (errorData is Map && errorData.containsKey('message')) {
-            errorMessage = errorData['message'].toString();
-          } else if (errorData is Map && errorData.containsKey('error')) {
-            errorMessage = errorData['error'].toString();
-          } else {
-            errorMessage = e.response?.statusMessage ?? errorMessage;
-          }
-        } else if (e.type == DioExceptionType.connectionTimeout ||
-            e.type == DioExceptionType.receiveTimeout ||
-            e.type == DioExceptionType.sendTimeout) {
-          errorMessage =
-              'Connection timeout. Please check your internet connection.';
-        } else if (e.type == DioExceptionType.connectionError) {
-          errorMessage = 'No internet connection. Please check your network.';
-        }
+      final deduped = _dedupeFavorites(response.data);
+      emit(
+        FavoritesSuccess(
+          FavoritesResponseModel(
+            result: response.result,
+            data: deduped,
+            message: response.message,
+            status: response.status,
+          ),
+          favoriteIds: _idsFrom(deduped),
+        ),
+      );
+    } catch (e) {
+      if (isClosed) return;
+
+      // Keep previous list on refresh failure.
+      if (hasData) {
+        debugPrint('Favorites refresh failed: $e');
+        return;
       }
 
-      if (isClosed) return;
-      emit(FavoritesFailure(errorMessage));
+      emit(FavoritesFailure(_errorMessage(e, 'An error occurred. Please try again.')));
     }
   }
 
-  /// Toggle favorite (add or remove)
-  Future<void> toggleFavorite({
+  /// Returns an error message on failure, otherwise null.
+  Future<String?> toggleFavorite({
     required int cardId,
     required String method,
   }) async {
-    if (isClosed) return;
+    if (isClosed) return 'Favorites unavailable';
+    if (_inFlightToggles.contains(cardId)) return null;
 
-    // Optimistically update the current state if we have favorites loaded
-    FavoritesResponseModel? previousFavorites;
-    if (state is FavoritesSuccess) {
-      previousFavorites = (state as FavoritesSuccess).response;
+    _inFlightToggles.add(cardId);
+
+    final previousState = state is FavoritesSuccess
+        ? state as FavoritesSuccess
+        : null;
+    final previousItems = previousState?.items ?? const <FavoriteItemModel>[];
+    final previousIds = Set<int>.from(
+      previousState?.favoriteIds ?? const <int>{},
+    );
+
+    // Optimistic update so heart stays in sync immediately.
+    if (method == 'delete') {
+      previousIds.remove(cardId);
+      final updatedItems = previousItems
+          .where((fav) => fav.card.id != cardId)
+          .toList();
+      if (!isClosed) {
+        emit(
+          FavoritesSuccess(
+            FavoritesResponseModel(
+              result: previousState?.response.result ?? 'Success',
+              data: updatedItems,
+              message: previousState?.response.message ?? '',
+              status: previousState?.response.status ?? 200,
+            ),
+            favoriteIds: previousIds,
+          ),
+        );
+      }
+    } else {
+      previousIds.add(cardId);
+      if (!isClosed) {
+        emit(
+          FavoritesSuccess(
+            FavoritesResponseModel(
+              result: previousState?.response.result ?? 'Success',
+              data: previousItems,
+              message: previousState?.response.message ?? '',
+              status: previousState?.response.status ?? 200,
+            ),
+            favoriteIds: previousIds,
+          ),
+        );
+      }
     }
 
     try {
-      final response = await _productsService.toggleFavorite(
-        cardId: cardId,
-        method: method,
-      );
+      await _productsService.toggleFavorite(cardId: cardId, method: method);
+      if (isClosed) return null;
 
-      if (isClosed) return;
-
-      // Update favorites list optimistically without refetching
-      if (previousFavorites != null) {
-        if (method == 'delete') {
-          // Optimistically remove the favorite from the list
-          final updatedData = List<FavoriteItemModel>.from(
-            previousFavorites.data,
-          );
-          updatedData.removeWhere((fav) => fav.card.id == cardId);
-
-          // Emit updated state without going through loading
-          emit(
-            FavoritesSuccess(
-              FavoritesResponseModel(
-                result: previousFavorites.result,
-                data: updatedData,
-                message: previousFavorites.message,
-                status: previousFavorites.status,
-              ),
-            ),
-          );
-        } else {
-          // For 'add', we need the full card data which we don't have
-          // Refresh silently in background without showing loading state
-          _refreshFavoritesSilently();
-        }
-      } else {
-        // If we don't have previous state, refresh silently
-        _refreshFavoritesSilently();
-      }
+      // Always sync with server so added items include full card data
+      // and duplicates from the API are removed.
+      await _refreshFavoritesSilently();
+      return null;
     } catch (e) {
-      // Revert to previous state on error
-      if (previousFavorites != null && !isClosed) {
-        emit(FavoritesSuccess(previousFavorites));
+      if (!isClosed && previousState != null) {
+        emit(previousState);
       }
 
-      String errorMessage = 'Failed to update favorite. Please try again.';
-
-      if (e is DioException) {
-        if (e.response != null) {
-          final errorData = e.response?.data;
-          if (errorData is Map && errorData.containsKey('message')) {
-            errorMessage = errorData['message'].toString();
-          } else if (errorData is Map && errorData.containsKey('error')) {
-            errorMessage = errorData['error'].toString();
-          } else {
-            errorMessage = e.response?.statusMessage ?? errorMessage;
-          }
-        }
-      }
-
-      if (isClosed) return;
-      emit(ToggleFavoriteFailure(errorMessage));
+      return _errorMessage(e, 'Failed to update favorite. Please try again.');
+    } finally {
+      _inFlightToggles.remove(cardId);
     }
   }
 
-  /// Refresh favorites silently without emitting loading state
   Future<void> _refreshFavoritesSilently() async {
     if (isClosed) return;
 
     try {
       final response = await _productsService.getFavorites();
       if (isClosed) return;
-      // Only emit if we're still in a state that needs updating
-      if (state is! FavoritesSuccess ||
-          (state as FavoritesSuccess).response.data.length !=
-              response.data.length) {
-        emit(FavoritesSuccess(response));
-      }
+
+      final deduped = _dedupeFavorites(response.data);
+      emit(
+        FavoritesSuccess(
+          FavoritesResponseModel(
+            result: response.result,
+            data: deduped,
+            message: response.message,
+            status: response.status,
+          ),
+          favoriteIds: _idsFrom(deduped),
+        ),
+      );
     } catch (e) {
-      // Silently fail - don't emit error state to avoid disrupting UI
       debugPrint('Silent favorites refresh failed: $e');
     }
   }
 
-  /// Reset to initial state
   void reset() {
     if (isClosed) return;
+    _inFlightToggles.clear();
     emit(FavoritesInitial());
+  }
+
+  String _errorMessage(Object e, String fallback) {
+    if (e is DioException) {
+      if (e.response != null) {
+        final errorData = e.response?.data;
+        if (errorData is Map && errorData.containsKey('message')) {
+          return errorData['message'].toString();
+        }
+        if (errorData is Map && errorData.containsKey('error')) {
+          return errorData['error'].toString();
+        }
+        return e.response?.statusMessage ?? fallback;
+      }
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        return 'Connection timeout. Please check your internet connection.';
+      }
+      if (e.type == DioExceptionType.connectionError) {
+        return 'No internet connection. Please check your network.';
+      }
+    }
+    return fallback;
   }
 }

@@ -10,8 +10,13 @@ class FavoritesLoading extends FavoritesState {}
 
 class FavoritesSuccess extends FavoritesState {
   final FavoritesResponseModel response;
+  final Set<int> favoriteIds;
 
-  const FavoritesSuccess(this.response);
+  const FavoritesSuccess(this.response, {required this.favoriteIds});
+
+  bool isFavorite(int cardId) => favoriteIds.contains(cardId);
+
+  List<FavoriteItemModel> get items => response.data;
 }
 
 class FavoritesFailure extends FavoritesState {
@@ -19,16 +24,3 @@ class FavoritesFailure extends FavoritesState {
 
   const FavoritesFailure(this.message);
 }
-
-class ToggleFavoriteSuccess extends FavoritesState {
-  final AddFavoriteResponseModel response;
-
-  const ToggleFavoriteSuccess(this.response);
-}
-
-class ToggleFavoriteFailure extends FavoritesState {
-  final String message;
-
-  const ToggleFavoriteFailure(this.message);
-}
-

@@ -4,21 +4,27 @@ class OrderCardItemModel {
   final int id;
   final int cardId;
   final int qty;
-  final ProductModel card;
+  final String? color;
+  final ProductModel? card;
 
   OrderCardItemModel({
     required this.id,
     required this.cardId,
     required this.qty,
-    required this.card,
+    this.color,
+    this.card,
   });
 
   factory OrderCardItemModel.fromJson(Map<String, dynamic> json) {
+    final cardJson = json['card'];
     return OrderCardItemModel(
       id: json['id'] as int,
       cardId: json['card_id'] as int,
-      qty: json['qty'] as int,
-      card: ProductModel.fromJson(json['card'] as Map<String, dynamic>),
+      qty: json['qty'] as int? ?? 0,
+      color: json['color'] as String?,
+      card: cardJson is Map<String, dynamic>
+          ? ProductModel.fromJson(cardJson)
+          : null,
     );
   }
 
@@ -27,10 +33,8 @@ class OrderCardItemModel {
       'id': id,
       'card_id': cardId,
       'qty': qty,
-      'card': card.toJson(),
+      'color': color,
+      'card': card?.toJson(),
     };
   }
 }
-
-
-
